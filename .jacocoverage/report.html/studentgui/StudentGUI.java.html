@@ -1,0 +1,1064 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>StudentGUI.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCoverage analysis of project &quot;Project03Project-Aparo&quot; (powered by JaCoCo from EclEmma)</a> &gt; <a href="index.source.html" class="el_package">studentgui</a> &gt; <span class="el_source">StudentGUI.java</span></div><h1>StudentGUI.java</h1><pre class="source lang-java linenums">package studentgui;
+
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.Iterator;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import student.Student;
+import studentspec.StudentSpec;
+import studentspec.StudentSpec.StudentValidatorSpec;
+
+import static studentspec.StudentSpec.ValidationStatus.*;
+
+import studentcollection.StudentCollection;
+
+import studentcollection.StudentCollectionSpec;
+import studentcollection.StudentCollectionSpec.StudentCollectionException;
+
+
+/**
+ * User interface designed to allow a user to manage the contents of a collection of students. The
+ * following functionalities are provided:
+ *   - retrieve an existing collection from disk, save and save as current collection to disk,
+ *     display the contents of the current collection
+ *   - create student (automatically stored into current collection)
+ *   - update a student currently in the collection (user must select (double-click) a student
+ *     currently in the collection)
+ *   - delete a student currently in the collection (user must provide SID of targeted student)
+ *
+ * &lt;p&gt;Copyright: (c) 2016&lt;/p&gt;
+ *
+ * @author J S Kasprzyk
+ * @version 1.6
+ */
+@SuppressWarnings(&quot;serial&quot;)
+public class StudentGUI extends JFrame implements ListSelectionListener
+{
+    /* flag that determines if diagnostics / informational displays are to be produced.
+     * Note that the displays themselves have been &quot;hidden&quot; in folded code blocks labeled
+     * as &quot;diagnostics&quot;   */
+<span class="nc" id="L61">    private final boolean diagnostics = false;</span>
+
+    /* create a JList-focused object for displaying the contents of a collection */
+    private DisplayObjectsAsJList studentList;
+
+    /* collection object used to store students   */
+<span class="nc" id="L67">    private final StudentCollectionSpec roster = StudentCollection.createStudentCollection(20);</span>
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;-------------------------------------------------------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    /* main panel, which will contain student, error and button panels. Managed with
+     * BorderLayout.   */
+    private JPanel mainPanel;
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;---------------&quot;&gt;
+    /* */
+    // &lt;/editor-fold&gt;
+
+    /* student information panel, which will contain a set of labels and text areas
+     * designed to collect information for a new student. Managed with GridLayout.   */
+    private JPanel studentInfoPanel;
+
+    private JTextField sidTextField;
+    private JTextField firstNameTextField;
+    private JTextField middleInitialTextField;
+    private JTextField lastNameTextField;
+    private JTextField majorTextField;
+    private JTextField TDCTextField;
+    private JTextField TQPTextField;
+    private JLabel sidLabel;
+    private JLabel firstNameLabel;
+    private JLabel middleInitialLabel;
+    private JLabel lastNameLabel;
+    private JLabel majorLabel;
+    private JLabel TDCLabel;
+    private JLabel TQPLabel;
+    private JLabel sidInstructions;
+    private JLabel firstNameInstructions;
+    private JLabel middleInitialInstructions;
+    private JLabel lastNameInstructions;
+    private JLabel majorInstructions;
+    private JLabel TDCInstructions;
+    private JLabel TQPInstructions;
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;---------------&quot;&gt;
+    /* */
+    // &lt;/editor-fold&gt;
+
+    /* error panel, which will contain a creation (instantiation) error
+     * message if one is warranted. Managed with FlowLayout.   */
+    private JPanel errorPanel;
+
+    private JTextArea errorTextArea;
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;---------------&quot;&gt;
+    /* */
+    // &lt;/editor-fold&gt;
+
+    /* general button panel, containing two subpanels (studentDisplay and file access).
+     * Managed with BorderLayout.   */
+    private JPanel buttonPanel;
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;---------------&quot;&gt;
+    /* */
+    // &lt;/editor-fold&gt;
+
+    /* student action panel, containing buttons to create, update, or delete individual
+     * students. Managed with FlowLayout.   */
+    private JPanel studentActionPanel;
+
+    private JButton createStudentButton;
+    private JButton deleteStudentButton;
+    private JButton updateStudentButton;
+    private JButton clearAllFieldsButton;
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;---------------&quot;&gt;
+    /* */
+    // &lt;/editor-fold&gt;
+
+    /* collection action panel, containing buttons to retrieve a collection from disk,
+     * write a collection to disk, or display a collection. Managed with FlowLayout.   */
+    private JPanel collectionActionPanel;
+
+    private JButton retrieveButton;
+    private JLabel fileBeingProcessedLabel;
+<span class="nc" id="L147">    private String fileBeingProcessed = &quot;Untitled&quot;;</span>
+    private JButton saveButton;
+    private JButton showAllButton;
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;-------------------------------------------------------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    public StudentGUI()
+    {
+<span class="nc" id="L156">        super(&quot;Student collection Graphical User Interface&quot;);</span>
+<span class="nc" id="L157">        initializeStudentGUI();</span>
+<span class="nc" id="L158">    }</span>
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;----------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    private void initializeStudentGUI()
+    {
+<span class="nc" id="L165">        Container aContainer = this.getContentPane();</span>
+<span class="nc" id="L166">        aContainer.setLayout(new FlowLayout());</span>
+
+<span class="nc" id="L168">        mainPanel = createMainPanel();</span>
+<span class="nc" id="L169">        aContainer.add(mainPanel);</span>
+
+<span class="nc" id="L171">        this.setMinimumSize(new Dimension(900, 450));</span>
+        /* place this JFrame in the center of the screen  */
+<span class="nc" id="L173">        this.setLocationRelativeTo(null);</span>
+<span class="nc" id="L174">        this.pack();</span>
+
+        /* set up to automatically provide a user a final opportunity to write the
+         * collection to disk by creating an object that will &quot;listen&quot; for this JFrame's
+         * &quot;close&quot; event and interact with the user before allowing the JFrame to
+         * finish closing  */
+<span class="nc" id="L180">        this.addWindowListener(new CleanUpWhenClosing());</span>
+<span class="nc" id="L181">    }</span>
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;----------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    private JPanel createMainPanel()
+    {
+<span class="nc" id="L188">        mainPanel = new JPanel();</span>
+<span class="nc" id="L189">        mainPanel.setLayout(new BorderLayout(0, 10));</span>
+
+<span class="nc" id="L191">        createStudentDisplayPanel();</span>
+<span class="nc" id="L192">        mainPanel.add(studentInfoPanel, BorderLayout.NORTH);</span>
+
+<span class="nc" id="L194">        createButtonPanel();</span>
+<span class="nc" id="L195">        mainPanel.add(buttonPanel, BorderLayout.SOUTH);</span>
+
+<span class="nc" id="L197">        createErrorPanel();</span>
+
+<span class="nc" id="L199">        return mainPanel;</span>
+    }
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;----------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    private void createStudentDisplayPanel()
+    {
+<span class="nc" id="L207">        studentInfoPanel = new JPanel();</span>
+<span class="nc" id="L208">        studentInfoPanel.setLayout(new GridLayout(7, 3, 10, 10));</span>
+
+        // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;---------------&quot;&gt;
+        /* */
+        // &lt;/editor-fold&gt;
+
+<span class="nc" id="L214">        sidLabel = new JLabel(&quot;SID&quot;);</span>
+<span class="nc" id="L215">        sidLabel.setHorizontalAlignment(JLabel.RIGHT);</span>
+<span class="nc" id="L216">        studentInfoPanel.add(sidLabel, 0);</span>
+<span class="nc" id="L217">        sidTextField = new JTextField();</span>
+<span class="nc" id="L218">        studentInfoPanel.add(sidTextField, 1);</span>
+<span class="nc" id="L219">        sidInstructions = new JLabel(&quot;enter exactly 7 digits&quot;);</span>
+<span class="nc" id="L220">        studentInfoPanel.add(sidInstructions, 2);</span>
+
+<span class="nc" id="L222">        firstNameLabel = new JLabel(&quot;First Name&quot;);</span>
+<span class="nc" id="L223">        firstNameLabel.setHorizontalAlignment(JLabel.RIGHT);</span>
+<span class="nc" id="L224">        studentInfoPanel.add(firstNameLabel, 3);</span>
+<span class="nc" id="L225">        firstNameTextField = new JTextField();</span>
+<span class="nc" id="L226">        studentInfoPanel.add(firstNameTextField, 4);</span>
+<span class="nc" id="L227">        firstNameInstructions = new JLabel(&quot;at least one non-blank character&quot;);</span>
+<span class="nc" id="L228">        studentInfoPanel.add(firstNameInstructions, 5);</span>
+
+<span class="nc" id="L230">        middleInitialLabel = new JLabel(&quot;Middle Initial&quot;);</span>
+<span class="nc" id="L231">        middleInitialLabel.setHorizontalAlignment(JLabel.RIGHT);</span>
+<span class="nc" id="L232">        studentInfoPanel.add(middleInitialLabel, 6);</span>
+<span class="nc" id="L233">        middleInitialTextField = new JTextField();</span>
+<span class="nc" id="L234">        studentInfoPanel.add(middleInitialTextField, 7);</span>
+<span class="nc" id="L235">        middleInitialInstructions = new JLabel(</span>
+          &quot;zero or one character (will truncate to 1 if longer)&quot;);
+<span class="nc" id="L237">        studentInfoPanel.add(middleInitialInstructions, 8);</span>
+
+<span class="nc" id="L239">        lastNameLabel = new JLabel(&quot;Last Name&quot;);</span>
+<span class="nc" id="L240">        lastNameLabel.setHorizontalAlignment(JLabel.RIGHT);</span>
+<span class="nc" id="L241">        studentInfoPanel.add(lastNameLabel, 9);</span>
+<span class="nc" id="L242">        lastNameTextField = new JTextField();</span>
+<span class="nc" id="L243">        studentInfoPanel.add(lastNameTextField, 10);</span>
+<span class="nc" id="L244">        lastNameInstructions = new JLabel(&quot;at least one non-blank character&quot;);</span>
+<span class="nc" id="L245">        studentInfoPanel.add(lastNameInstructions, 11);</span>
+
+<span class="nc" id="L247">        majorLabel = new JLabel(&quot;Major&quot;);</span>
+<span class="nc" id="L248">        majorLabel.setHorizontalAlignment(JLabel.RIGHT);</span>
+<span class="nc" id="L249">        studentInfoPanel.add(majorLabel, 12);</span>
+<span class="nc" id="L250">        majorTextField = new JTextField();</span>
+<span class="nc" id="L251">        studentInfoPanel.add(majorTextField, 13);</span>
+<span class="nc" id="L252">        majorInstructions = new JLabel(&quot;three letter code&quot;);</span>
+<span class="nc" id="L253">        studentInfoPanel.add(majorInstructions, 14);</span>
+
+<span class="nc" id="L255">        TDCLabel = new JLabel(&quot;Total Degree Credits&quot;);</span>
+<span class="nc" id="L256">        TDCLabel.setHorizontalAlignment(JLabel.RIGHT);</span>
+<span class="nc" id="L257">        studentInfoPanel.add(TDCLabel, 15);</span>
+<span class="nc" id="L258">        TDCTextField = new JTextField();</span>
+<span class="nc" id="L259">        studentInfoPanel.add(TDCTextField, 16);</span>
+<span class="nc" id="L260">        TDCInstructions = new JLabel(&quot;numeric, single decimal value&quot;);</span>
+<span class="nc" id="L261">        studentInfoPanel.add(TDCInstructions, 17);</span>
+
+<span class="nc" id="L263">        TQPLabel = new JLabel(&quot;Total Quality Points&quot;);</span>
+<span class="nc" id="L264">        TQPLabel.setHorizontalAlignment(JLabel.RIGHT);</span>
+<span class="nc" id="L265">        studentInfoPanel.add(TQPLabel, 18);</span>
+<span class="nc" id="L266">        TQPTextField = new JTextField();</span>
+<span class="nc" id="L267">        studentInfoPanel.add(TQPTextField, 19);</span>
+<span class="nc" id="L268">        TQPInstructions = new JLabel(&quot;numeric, single decimal value&quot;);</span>
+<span class="nc" id="L269">        studentInfoPanel.add(TQPInstructions, 20);</span>
+<span class="nc" id="L270">    }</span>
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;----------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    private void createButtonPanel()
+    {
+<span class="nc" id="L277">        buttonPanel = new JPanel();</span>
+<span class="nc" id="L278">        buttonPanel.setLayout(new BorderLayout(0,20));</span>
+
+        // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;---------------&quot;&gt;
+        /* */
+        // &lt;/editor-fold&gt;
+
+<span class="nc" id="L284">        createStudentActionPanel();</span>
+<span class="nc" id="L285">        buttonPanel.add(studentActionPanel, BorderLayout.NORTH);</span>
+
+<span class="nc" id="L287">        createCollectionActionPanel();</span>
+<span class="nc" id="L288">        buttonPanel.add(collectionActionPanel, BorderLayout.SOUTH);</span>
+<span class="nc" id="L289">    }</span>
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;----------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    /* initialize the panel of buttons that control manipulation of a student */
+    private void createStudentActionPanel()
+    {
+<span class="nc" id="L297">        studentActionPanel = new JPanel(new FlowLayout());</span>
+
+        // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;---------------&quot;&gt;
+        /* */
+        // &lt;/editor-fold&gt;
+
+<span class="nc" id="L303">        createStudentButton = new JButton(&quot;Create Student&quot;);</span>
+<span class="nc" id="L304">        createStudentButton.addActionListener(new CreateStudentButtonEventProcessor());</span>
+<span class="nc" id="L305">        studentActionPanel.add(createStudentButton);</span>
+
+<span class="nc" id="L307">        updateStudentButton = new JButton(&quot;Update Student&quot;);</span>
+<span class="nc" id="L308">        updateStudentButton.addActionListener(new UpdateStudentButtonEventProcessor());</span>
+<span class="nc" id="L309">        studentActionPanel.add(updateStudentButton);</span>
+
+<span class="nc" id="L311">        deleteStudentButton = new JButton(&quot;Delete Student&quot;);</span>
+<span class="nc" id="L312">        deleteStudentButton.addActionListener(new DeleteStudentButtonEventProcessor());</span>
+<span class="nc" id="L313">        studentActionPanel.add(deleteStudentButton);</span>
+
+<span class="nc" id="L315">        clearAllFieldsButton = new JButton(&quot;Clear All Fields&quot;);</span>
+<span class="nc" id="L316">        clearAllFieldsButton.addActionListener(new ClearAllFieldsButtonEventProcessor());</span>
+<span class="nc" id="L317">        studentActionPanel.add(clearAllFieldsButton);</span>
+<span class="nc" id="L318">    }</span>
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;----------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    /* initialize the panel of buttons that control accessing and displaying a
+     * collection */
+    private void createCollectionActionPanel()
+    {
+<span class="nc" id="L327">        collectionActionPanel = new JPanel(new FlowLayout());</span>
+
+        // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;---------------&quot;&gt;
+        /* */
+        // &lt;/editor-fold&gt;
+
+<span class="nc" id="L333">        retrieveButton = new JButton(&quot;Retrieve From Disk&quot;);</span>
+<span class="nc" id="L334">        retrieveButton.addActionListener(new RetrieveButtonEventProcessor());</span>
+<span class="nc" id="L335">        collectionActionPanel.add(retrieveButton);</span>
+
+<span class="nc" id="L337">        saveButton = new JButton(&quot;Save To Disk&quot;);</span>
+<span class="nc" id="L338">        saveButton.addActionListener(new SaveButtonEventProcessor());</span>
+<span class="nc" id="L339">        collectionActionPanel.add(saveButton);</span>
+
+<span class="nc" id="L341">        fileBeingProcessedLabel = new JLabel(&quot;Current collection: &quot; + fileBeingProcessed);</span>
+<span class="nc" id="L342">        collectionActionPanel.add(fileBeingProcessedLabel);</span>
+
+<span class="nc" id="L344">        showAllButton = new JButton(&quot;Show Collection&quot;);</span>
+<span class="nc" id="L345">        showAllButton.addActionListener(new ShowCollectionButtonEventProcessor());</span>
+<span class="nc" id="L346">        collectionActionPanel.add(showAllButton);</span>
+<span class="nc" id="L347">    }</span>
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;----------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    private JPanel createErrorPanel()
+    {
+<span class="nc" id="L354">        errorPanel = new JPanel();</span>
+<span class="nc" id="L355">        errorPanel.setLayout(new BorderLayout());</span>
+
+        // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;---------------&quot;&gt;
+        /* */
+        // &lt;/editor-fold&gt;
+
+<span class="nc" id="L361">        errorTextArea = new JTextArea(&quot;&quot;);</span>
+<span class="nc" id="L362">        errorTextArea.setForeground(Color.red);</span>
+<span class="nc" id="L363">        errorTextArea.setLineWrap(true);</span>
+<span class="nc" id="L364">        errorTextArea.setWrapStyleWord(true);</span>
+<span class="nc" id="L365">        errorTextArea.setColumns(50);</span>
+<span class="nc" id="L366">        Font defaultFont = errorTextArea.getFont();</span>
+<span class="nc" id="L367">        Font newFont =</span>
+<span class="nc" id="L368">          new Font(defaultFont.getName(), Font.BOLD, defaultFont.getSize() + 6);</span>
+<span class="nc" id="L369">        errorTextArea.setFont(newFont);</span>
+<span class="nc" id="L370">        errorPanel.add(errorTextArea, BorderLayout.CENTER);</span>
+
+<span class="nc" id="L372">        return errorPanel;</span>
+    }
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;-------------------------------------------------------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    private void clearAllFields()
+    {
+<span class="nc" id="L380">        sidTextField.setForeground(Color.black);</span>
+<span class="nc" id="L381">        firstNameTextField.setForeground(Color.black);</span>
+<span class="nc" id="L382">        middleInitialTextField.setForeground(Color.black);</span>
+<span class="nc" id="L383">        lastNameTextField.setForeground(Color.black);</span>
+<span class="nc" id="L384">        majorTextField.setForeground(Color.black);</span>
+<span class="nc" id="L385">        TDCTextField.setForeground(Color.black);</span>
+<span class="nc" id="L386">        TQPTextField.setForeground(Color.black);</span>
+
+<span class="nc" id="L388">        sidInstructions.setForeground(Color.black);</span>
+<span class="nc" id="L389">        firstNameInstructions.setForeground(Color.black);</span>
+<span class="nc" id="L390">        middleInitialInstructions.setForeground(Color.black);</span>
+<span class="nc" id="L391">        lastNameInstructions.setForeground(Color.black);</span>
+<span class="nc" id="L392">        majorInstructions.setForeground(Color.black);</span>
+<span class="nc" id="L393">        TDCInstructions.setForeground(Color.black);</span>
+<span class="nc" id="L394">        TQPInstructions.setForeground(Color.black);</span>
+
+<span class="nc" id="L396">        sidTextField.setText(&quot;&quot;);</span>
+<span class="nc" id="L397">        firstNameTextField.setText(&quot;&quot;);</span>
+<span class="nc" id="L398">        middleInitialTextField.setText(&quot;&quot;);</span>
+<span class="nc" id="L399">        lastNameTextField.setText(&quot;&quot;);</span>
+<span class="nc" id="L400">        majorTextField.setText(&quot;&quot;);</span>
+<span class="nc" id="L401">        TDCTextField.setText(&quot;&quot;);</span>
+<span class="nc" id="L402">        TQPTextField.setText(&quot;&quot;);</span>
+
+<span class="nc" id="L404">        mainPanel.remove(errorPanel);</span>
+<span class="nc" id="L405">        this.validate();</span>
+<span class="nc" id="L406">    }</span>
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;----------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    private boolean verifyUniqueness( StudentSpec newStudent )
+    {
+        /* determine if a student is already in the collection by attempting to retrieve
+         * an already-existing student that has the &quot;new&quot; student's SID    */
+<span class="nc bnc" id="L415" title="All 2 branches missed.">        return roster.retrieveStudentBySID(newStudent.getSID()) == null;</span>
+    }
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;----------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    private StudentSpec processStudentFields()
+    {
+<span class="nc" id="L423">        boolean allValid = true;</span>
+
+<span class="nc" id="L425">        StudentValidatorSpec validator = Student.getStudentValidator();</span>
+
+        // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;---------------&quot;&gt;
+        /* */
+        // &lt;/editor-fold&gt;
+
+<span class="nc" id="L431">        String sid = sidTextField.getText();</span>
+<span class="nc bnc" id="L432" title="All 2 branches missed.">        if ( validator.validateSID(sid) != IS_VALID )</span>
+        {
+<span class="nc" id="L434">            allValid = false;</span>
+<span class="nc" id="L435">            sidTextField.setForeground(Color.red);</span>
+<span class="nc" id="L436">            sidInstructions.setForeground(Color.red);</span>
+        }
+        else
+        {
+<span class="nc" id="L440">            sidTextField.setForeground(Color.black);</span>
+<span class="nc" id="L441">            sidInstructions.setForeground(Color.black);</span>
+        }
+
+        // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;---------------&quot;&gt;
+        /* */
+        // &lt;/editor-fold&gt;
+
+<span class="nc" id="L448">        String firstName = firstNameTextField.getText();</span>
+<span class="nc bnc" id="L449" title="All 2 branches missed.">        if ( validator.validateFirstName(firstName) != IS_VALID )</span>
+        {
+<span class="nc" id="L451">            allValid = false;</span>
+<span class="nc" id="L452">            firstNameTextField.setForeground(Color.red);</span>
+<span class="nc" id="L453">            firstNameInstructions.setForeground(Color.red);</span>
+        }
+        else
+        {
+<span class="nc" id="L457">            firstNameTextField.setForeground(Color.black);</span>
+<span class="nc" id="L458">            firstNameInstructions.setForeground(Color.black);</span>
+        }
+
+        // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;---------------&quot;&gt;
+        /* */
+        // &lt;/editor-fold&gt;
+
+<span class="nc" id="L465">        String middleInitial = middleInitialTextField.getText();</span>
+<span class="nc bnc" id="L466" title="All 2 branches missed.">        if ( validator.validateMiddleInitial(middleInitial) != IS_VALID )</span>
+        {
+<span class="nc" id="L468">            allValid = false;</span>
+<span class="nc" id="L469">            middleInitialTextField.setForeground(Color.red);</span>
+<span class="nc" id="L470">            middleInitialInstructions.setForeground(Color.red);</span>
+        }
+        else
+        {
+<span class="nc" id="L474">            middleInitialTextField.setForeground(Color.black);</span>
+<span class="nc" id="L475">            middleInitialInstructions.setForeground(Color.black);</span>
+        }
+
+        // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;---------------&quot;&gt;
+        /* */
+        // &lt;/editor-fold&gt;
+
+<span class="nc" id="L482">        String lastName = lastNameTextField.getText();</span>
+<span class="nc bnc" id="L483" title="All 2 branches missed.">        if ( validator.validateLastName(lastName) != IS_VALID )</span>
+        {
+<span class="nc" id="L485">            allValid = false;</span>
+<span class="nc" id="L486">            lastNameTextField.setForeground(Color.red);</span>
+<span class="nc" id="L487">            lastNameInstructions.setForeground(Color.red);</span>
+        }
+        else
+        {
+<span class="nc" id="L491">            lastNameTextField.setForeground(Color.black);</span>
+<span class="nc" id="L492">            lastNameInstructions.setForeground(Color.black);</span>
+        }
+
+        // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;---------------&quot;&gt;
+        /* */
+        // &lt;/editor-fold&gt;
+
+<span class="nc" id="L499">        String major = majorTextField.getText();</span>
+<span class="nc bnc" id="L500" title="All 2 branches missed.">        if ( validator.validateMajor(major) != IS_VALID )</span>
+        {
+<span class="nc" id="L502">            allValid = false;</span>
+<span class="nc" id="L503">            majorTextField.setForeground(Color.red);</span>
+<span class="nc" id="L504">            majorInstructions.setForeground(Color.red);</span>
+        }
+        else
+        {
+<span class="nc" id="L508">            majorTextField.setForeground(Color.black);</span>
+<span class="nc" id="L509">            majorInstructions.setForeground(Color.black);</span>
+        }
+
+        // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;---------------&quot;&gt;
+        /* */
+        // &lt;/editor-fold&gt;
+
+<span class="nc" id="L516">        String TDCAsString = TDCTextField.getText();</span>
+        double TDC;
+        try
+        {
+<span class="nc" id="L520">            TDC = Double.parseDouble(TDCAsString);</span>
+<span class="nc bnc" id="L521" title="All 2 branches missed.">            if ( validator.validateGPAIngredients(TDC, TDC) != IS_VALID )</span>
+            {
+<span class="nc" id="L523">                allValid = false;</span>
+<span class="nc" id="L524">                TDCTextField.setForeground(Color.red);</span>
+<span class="nc" id="L525">                TDCInstructions.setForeground(Color.red);</span>
+            }
+            else
+            {
+<span class="nc" id="L529">                TDCTextField.setForeground(Color.black);</span>
+<span class="nc" id="L530">                TDCInstructions.setForeground(Color.black);</span>
+            }
+        }
+<span class="nc" id="L533">        catch ( NumberFormatException numberFormatException )</span>
+        {
+<span class="nc" id="L535">            allValid = false;</span>
+<span class="nc" id="L536">            TDC = Double.NEGATIVE_INFINITY;</span>
+<span class="nc" id="L537">            TDCTextField.setForeground(Color.red);</span>
+<span class="nc" id="L538">            TDCInstructions.setForeground(Color.red);</span>
+<span class="nc" id="L539">        }</span>
+
+        // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;---------------&quot;&gt;
+        /* */
+        // &lt;/editor-fold&gt;
+
+<span class="nc" id="L545">        String TQPAsString = TQPTextField.getText();</span>
+        double TQP;
+        try
+        {
+<span class="nc" id="L549">            TQP = Double.parseDouble(TQPAsString);</span>
+<span class="nc bnc" id="L550" title="All 2 branches missed.">            if ( validator.validateGPAIngredients(TQP, TQP) != IS_VALID )</span>
+            {
+<span class="nc" id="L552">                allValid = false;</span>
+<span class="nc" id="L553">                TQPTextField.setForeground(Color.red);</span>
+<span class="nc" id="L554">                TQPInstructions.setForeground(Color.red);</span>
+            }
+            else
+            {
+<span class="nc" id="L558">                TQPTextField.setForeground(Color.black);</span>
+<span class="nc" id="L559">                TQPInstructions.setForeground(Color.black);</span>
+            }
+        }
+<span class="nc" id="L562">        catch ( NumberFormatException numberFormatException )</span>
+        {
+<span class="nc" id="L564">            allValid = false;</span>
+<span class="nc" id="L565">            TQP = Double.NEGATIVE_INFINITY;</span>
+<span class="nc" id="L566">            TQPTextField.setForeground(Color.red);</span>
+<span class="nc" id="L567">            TQPInstructions.setForeground(Color.red);</span>
+<span class="nc" id="L568">        }</span>
+
+        // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;---------------&quot;&gt;
+        /* */
+        // &lt;/editor-fold&gt;
+
+<span class="nc" id="L574">        StudentSpec newStudent = null;</span>
+<span class="nc bnc" id="L575" title="All 2 branches missed.">        if ( allValid )</span>
+        {
+            try
+            {
+<span class="nc" id="L579">                newStudent = Student.create(sid, firstName, middleInitial, lastName,</span>
+                  major, TDC, TQP);
+            }
+<span class="nc" id="L582">            catch ( StudentSpec.StudentSpecException studentSpecException )</span>
+            {
+<span class="nc" id="L584">                newStudent = null;</span>
+
+<span class="nc" id="L586">                errorTextArea.setText(studentSpecException.getMessage());</span>
+
+<span class="nc" id="L588">                mainPanel.add(errorPanel, BorderLayout.CENTER);</span>
+<span class="nc" id="L589">            }</span>
+        }
+        else
+        {
+<span class="nc" id="L593">            mainPanel.remove(errorPanel);</span>
+        }
+<span class="nc" id="L595">        this.validate();</span>
+
+<span class="nc" id="L597">        return newStudent;</span>
+    }
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;-------------------------------------------------------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    public void updateJListWindow()
+    {
+<span class="nc bnc" id="L605" title="All 2 branches missed.">        if (studentList == null)</span>
+        {
+<span class="nc" id="L607">            return;</span>
+        }
+<span class="nc" id="L609">        studentList.setListData(convertCollectionToArray(roster));</span>
+<span class="nc" id="L610">        studentList.setListTitle(&quot;Contents of collection &quot; + fileBeingProcessed);</span>
+<span class="nc" id="L611">    }</span>
+
+    private Object[] convertCollectionToArray( StudentCollectionSpec roster )
+    {
+        /* convert supplied collection to a simple array */
+<span class="nc" id="L616">        Iterator&lt;StudentSpec&gt; anIterator = roster.createIterator();</span>
+<span class="nc" id="L617">        StudentSpec[] studentArray = new StudentSpec[roster.getStudentCount()];</span>
+
+<span class="nc" id="L619">        int index = 0;</span>
+<span class="nc bnc" id="L620" title="All 2 branches missed.">        while ( anIterator.hasNext() )</span>
+        {
+<span class="nc" id="L622">            studentArray[index] = anIterator.next();</span>
+<span class="nc" id="L623">            index++;</span>
+        }
+<span class="nc" id="L625">        return studentArray;</span>
+    }
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;----------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    @Override
+    public void valueChanged( ListSelectionEvent anEvent )
+    {
+        // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;diagnostic displays&quot;&gt;
+        if ( diagnostics )
+        {
+            System.out.println(&quot;In StudentGUI, valueChanged() &quot;
+              + &quot;being invoked, StudentGUI.this = &quot; + StudentGUI.this.getClass()
+              + &quot; (&quot; + StudentGUI.this.hashCode() + &quot;)&quot;);
+            System.out.println(&quot;valueChanged in StudentGUI: \n&quot; +
+              &quot;     event:    &quot; + anEvent.getSource() + &quot; (&quot; + anEvent.hashCode()
+              + &quot;)\n&quot; +
+              &quot;     index:    &quot; + anEvent.getFirstIndex() + &quot;\n&quot; +
+              &quot;     contents: &quot; + studentList.getSelectedValue());
+        }// &lt;/editor-fold&gt;
+
+        /* use information from the currently-selected element in studentList to populate
+         * the student info display area   */
+<span class="nc" id="L649">        populateStudentFields();</span>
+<span class="nc" id="L650">    }</span>
+
+    private void populateStudentFields()
+    {
+<span class="nc" id="L654">        StudentSpec aStudent = ( StudentSpec ) studentList.getSelectedValue();</span>
+
+<span class="nc" id="L656">        sidTextField.setText(aStudent.getSID());</span>
+<span class="nc" id="L657">        firstNameTextField.setText(aStudent.getFirstName());</span>
+<span class="nc" id="L658">        middleInitialTextField.setText(aStudent.getMiddleInitial());</span>
+<span class="nc" id="L659">        lastNameTextField.setText(aStudent.getLastName());</span>
+<span class="nc" id="L660">        majorTextField.setText(aStudent.getMajor());</span>
+<span class="nc" id="L661">        TDCTextField.setText(Double.toString(aStudent.getTotalDegreeCredits()));</span>
+<span class="nc" id="L662">        TQPTextField.setText(Double.toString(aStudent.getTotalQualityPoints()));</span>
+
+<span class="nc" id="L664">        this.validate();</span>
+<span class="nc" id="L665">    }</span>
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    /* class that will act as an event processor for &quot;close frame&quot; events   */
+<span class="nc" id="L671">    private class CleanUpWhenClosing extends WindowAdapter</span>
+    {
+        /* the windowClosing method is invoked while the JFrame is in the PROCESS of
+         * being closed - there is a similarly-named method &quot;windowClosed&quot; that is invoked
+         * only AFTER the JFrame has been closed, and for our purposes, that would be
+         * too late. */
+        @Override
+        public void windowClosing( WindowEvent anEvent )
+        {
+<span class="nc" id="L680">            int result = JOptionPane.showConfirmDialog(null,</span>
+              &quot;The contents of the student collection can be\n&quot; +
+              &quot;written to disk if desired. Click 'Yes' to access\n&quot; +
+              &quot;a write dialog, otherwise click 'No'.&quot;,
+              &quot;Save file to disk ?&quot;, JOptionPane.YES_NO_OPTION);
+
+<span class="nc bnc" id="L686" title="All 2 branches missed.">            if (result == JOptionPane.YES_OPTION)</span>
+            {
+                /* the SaveButtonEventProcessor inner class contains all of the logic
+                 * needed to interact with the user and write the collection to disk,
+                 * so create an instance of that class and then invoke its
+                 * writeCollectionToDisk method. */
+<span class="nc" id="L692">                new SaveButtonEventProcessor().writeCollectionToDisk();</span>
+            }
+<span class="nc" id="L694">        }</span>
+    }
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    /* class that will act as an event processor for createStudentButton.   */
+<span class="nc" id="L701">    private class CreateStudentButtonEventProcessor implements ActionListener</span>
+    {
+        @Override
+        public void actionPerformed( ActionEvent anEvent )
+        {
+<span class="nc" id="L706">            createNewStudent();</span>
+<span class="nc" id="L707">        }</span>
+
+        private void createNewStudent()
+        {
+<span class="nc" id="L711">            StudentSpec newStudent = processStudentFields();</span>
+<span class="nc bnc" id="L712" title="All 2 branches missed.">            if ( newStudent != null )</span>
+            {
+<span class="nc" id="L714">                addStudentToCollection(newStudent);</span>
+            }
+<span class="nc" id="L716">        }</span>
+
+        private void addStudentToCollection( StudentSpec newStudent )
+        {
+            /* don't addStudent the new student if a student with the same SID is already
+             * in the current collection */
+<span class="nc" id="L722">            boolean unique = verifyUniqueness(newStudent);</span>
+<span class="nc bnc" id="L723" title="All 2 branches missed.">            if ( unique )</span>
+            {
+<span class="nc" id="L725">                roster.addStudent(newStudent);</span>
+
+<span class="nc" id="L727">                JOptionPane.showMessageDialog(null,</span>
+                  &quot;Student successfully created:\n&quot; +
+                  &quot;     &quot; + newStudent + &quot;\n&quot; +
+                  &quot;     has been added to current collection&quot;,
+                  &quot;Confirmation - student created&quot;,
+                  JOptionPane.INFORMATION_MESSAGE);
+<span class="nc" id="L733">                clearAllFields();</span>
+
+                /* update the JList display) */
+<span class="nc" id="L736">                updateJListWindow();</span>
+            }
+            else
+            {
+<span class="nc" id="L740">                errorTextArea.setText(</span>
+                  &quot;A student with this SID already exists in the\n&quot; +
+                  &quot;current collection. A new student cannot be created\n&quot; +
+<span class="nc" id="L743">                  &quot;for current value of SID (&quot; + newStudent.getSID() + &quot;)&quot;);</span>
+
+<span class="nc" id="L745">                mainPanel.add(errorPanel, BorderLayout.CENTER);</span>
+            }
+<span class="nc" id="L747">            StudentGUI.this.validate();</span>
+<span class="nc" id="L748">        }</span>
+    }
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    /* class that will act as an event processor for updateStudentButton.   */
+<span class="nc" id="L755">    private class UpdateStudentButtonEventProcessor implements ActionListener</span>
+    {
+        @Override
+        public void actionPerformed( ActionEvent anEvent )
+        {
+<span class="nc" id="L760">            updateExistingStudent();</span>
+<span class="nc" id="L761">        }</span>
+
+        private void updateExistingStudent()
+        {
+<span class="nc" id="L765">            StudentSpec updatedStudent = processStudentFields();</span>
+<span class="nc bnc" id="L766" title="All 2 branches missed.">            if ( updatedStudent != null )</span>
+            {
+<span class="nc" id="L768">                replaceStudentInCollection(updatedStudent);</span>
+            }
+<span class="nc" id="L770">        }</span>
+
+        private void replaceStudentInCollection( StudentSpec updatedStudent )
+        {
+            /* only update (&quot;replace&quot;) the student if the student is already in the
+             * current collection */
+<span class="nc" id="L776">            boolean unique = verifyUniqueness(updatedStudent);</span>
+<span class="nc bnc" id="L777" title="All 2 branches missed.">            if ( unique == false )</span>
+            {
+<span class="nc" id="L779">                StudentSpec oldVersionOfStudent =</span>
+<span class="nc" id="L780">                  roster.removeStudentBySID(updatedStudent.getSID());</span>
+<span class="nc" id="L781">                roster.addStudent(updatedStudent);</span>
+
+<span class="nc" id="L783">                JOptionPane.showMessageDialog(null,</span>
+                  &quot;Student successfully updated:\n&quot; +
+                  &quot;     &quot; + oldVersionOfStudent + &quot;\n&quot; +
+                  &quot;     has been has been updated to\n&quot; + &quot;     &quot; + updatedStudent,
+                  &quot;Confirmation - student created&quot;,
+                  JOptionPane.INFORMATION_MESSAGE);
+<span class="nc" id="L789">                clearAllFields();</span>
+
+                /* update the JList display */
+<span class="nc" id="L792">                updateJListWindow();</span>
+<span class="nc" id="L793">            }</span>
+            else
+            {
+<span class="nc" id="L796">                errorTextArea.setText(</span>
+                  &quot;No student with this SID currently exists in the &quot;
+                  + &quot;current collection. A student cannot be updated if &quot;
+                  + &quot;the current record for the student cannot be located.&quot;
+<span class="nc" id="L800">                  + &quot;The 'missing' student SID is &quot; + updatedStudent.getSID() + &quot;.&quot;);</span>
+
+<span class="nc" id="L802">                mainPanel.add(errorPanel, BorderLayout.CENTER);</span>
+            }
+<span class="nc" id="L804">            StudentGUI.this.validate();</span>
+<span class="nc" id="L805">        }</span>
+    }
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    /* class that will act as an event processor for deleteStudentButton.   */
+<span class="nc" id="L812">    private class DeleteStudentButtonEventProcessor implements ActionListener</span>
+    {
+        @Override
+        public void actionPerformed( ActionEvent anEvent )
+        {
+<span class="nc" id="L817">            deleteExistingStudent();</span>
+<span class="nc" id="L818">        }</span>
+
+        private void deleteExistingStudent()
+        {
+<span class="nc" id="L822">            String sidBeingDeleted = sidTextField.getText();</span>
+<span class="nc" id="L823">            removeStudentFromCollection(sidBeingDeleted);</span>
+<span class="nc" id="L824">        }</span>
+
+        private void removeStudentFromCollection( String sidBeingDeleted )
+        {
+<span class="nc" id="L828">            StudentSpec theStudent = roster.removeStudentBySID(sidBeingDeleted);</span>
+<span class="nc bnc" id="L829" title="All 2 branches missed.">            if ( theStudent != null )</span>
+            {
+<span class="nc" id="L831">                JOptionPane.showMessageDialog(null,</span>
+                  &quot;Student successfully deleted:\n&quot; + &quot;     &quot; + theStudent + &quot;\n&quot; +
+                  &quot;     has been has been removed from the collection&quot;,
+                  &quot;Confirmation - student created&quot;,
+                  JOptionPane.INFORMATION_MESSAGE);
+<span class="nc" id="L836">                clearAllFields();</span>
+
+                /* update the JList display */
+<span class="nc" id="L839">                updateJListWindow();</span>
+            }
+            else
+            {
+<span class="nc" id="L843">                errorTextArea.setText(</span>
+                  &quot;No student with this SID currently exists in the &quot;
+                  + &quot;current collection. A student cannot be deleted if &quot;
+                  + &quot;the current record for the student cannot be located.&quot;
+                  + &quot;The 'missing' student SID is &quot; + sidBeingDeleted + &quot;.&quot;);
+
+<span class="nc" id="L849">                mainPanel.add(errorPanel, BorderLayout.CENTER);</span>
+            }
+<span class="nc" id="L851">            StudentGUI.this.validate();</span>
+<span class="nc" id="L852">        }</span>
+    }
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    /* class that will act as an event processor for clearAllFieldsButton.   */
+<span class="nc" id="L859">    private class ClearAllFieldsButtonEventProcessor implements ActionListener</span>
+    {
+        @Override
+        public void actionPerformed( ActionEvent anEvent )
+        {
+<span class="nc" id="L864">            clearAllFields();</span>
+<span class="nc" id="L865">        }</span>
+    }
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    /* class that will act as an event processor for showCollectionButton.   */
+<span class="nc" id="L872">    private class ShowCollectionButtonEventProcessor implements ActionListener</span>
+    {
+        @Override
+        public void actionPerformed( ActionEvent anEvent )
+        {
+<span class="nc" id="L877">            createStudentListDisplay();</span>
+<span class="nc" id="L878">            studentList.setVisible(true);</span>
+<span class="nc" id="L879">        }</span>
+
+        private void createStudentListDisplay()
+        {
+<span class="nc bnc" id="L883" title="All 2 branches missed.">            if (studentList == null)</span>
+            {
+<span class="nc" id="L885">                String collectionName =</span>
+<span class="nc bnc" id="L886" title="All 2 branches missed.">                  (fileBeingProcessed==null) ? &quot;untitled&quot; : fileBeingProcessed;</span>
+
+<span class="nc" id="L888">                studentList = new DisplayObjectsAsJList(</span>
+                  &quot;Contents of collection &quot; + collectionName,
+<span class="nc" id="L890">                  convertCollectionToArray(roster));</span>
+
+                // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;diagnostic displays&quot;&gt;
+                if ( diagnostics )
+                {
+                    System.out.println(&quot;In StudentGUI, &quot; +
+                      &quot;ShowAllStudentsAsJList.addListSelectionListener() &quot; +
+                      &quot;being invoked, StudentGUI.this = &quot; + StudentGUI.this.getClass() +
+                      &quot; (&quot; + StudentGUI.this.hashCode() + &quot;)&quot;);
+                }// &lt;/editor-fold&gt;
+
+<span class="nc" id="L901">                studentList.addListSelectionListener(StudentGUI.this);</span>
+            }
+<span class="nc" id="L903">        }</span>
+    }
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    /* class that will act as an event processor for retrieveFromDiskButton.   */
+<span class="nc" id="L910">    private class RetrieveButtonEventProcessor implements ActionListener</span>
+    {
+        @Override
+        public void actionPerformed( ActionEvent anEvent )
+        {
+<span class="nc" id="L915">            fetchCollectionFromDisk();</span>
+<span class="nc" id="L916">        }</span>
+
+        /* note - this code is a direct copy of a method from a previous example */
+        private void fetchCollectionFromDisk()
+        {
+<span class="nc" id="L921">            String fileName = null;</span>
+            do
+            {
+<span class="nc" id="L924">                fileName = JOptionPane.showInputDialog(null,</span>
+                  &quot;Please enter the name of the file that contains the contents\n&quot; +
+                  &quot;of the collection that you wish to interact with&quot;,
+                  &quot;Fetch collection from disk&quot;,
+                  JOptionPane.QUESTION_MESSAGE);
+<span class="nc bnc" id="L929" title="All 4 branches missed.">                if ( fileName == null || fileName.trim().length() == 0 )</span>
+                {
+<span class="nc" id="L931">                    JOptionPane.showMessageDialog(null,</span>
+                      &quot;You must supply a value!&quot;,
+                      &quot;ERROR - MISSING RESPONSE&quot;,
+                      JOptionPane.ERROR_MESSAGE);
+                }
+            }
+<span class="nc bnc" id="L937" title="All 4 branches missed.">            while ( fileName == null || fileName.trim().length() == 0 );</span>
+
+<span class="nc" id="L939">            String trimmedFilename = fileName.trim();</span>
+<span class="nc" id="L940">            boolean fileIsPresent = StudentCollectionSpec.fileExists(trimmedFilename);</span>
+
+<span class="nc bnc" id="L942" title="All 2 branches missed.">            if ( !fileIsPresent )</span>
+            {
+<span class="nc" id="L944">                JOptionPane.showMessageDialog(null,</span>
+                  &quot;The file that you specified cannot be found - collection\n&quot; +
+                  &quot;contents not retrieved&quot;,
+                  &quot;Fetch collection from disk ERROR&quot;,
+                  JOptionPane.ERROR_MESSAGE);
+<span class="nc" id="L949">                return;</span>
+            }
+
+            try
+            {
+<span class="nc" id="L954">                roster.retrieveCollectionFromDisk(trimmedFilename);</span>
+
+<span class="nc" id="L956">                JOptionPane.showMessageDialog(null,</span>
+                  &quot;Collection successfully retrieved from file &quot; + trimmedFilename,
+                  &quot;Fetch collection from disk CONFIRMATION&quot;,
+                  JOptionPane.INFORMATION_MESSAGE);
+
+                /* cause the file that was read to be displayed in the GUI */
+<span class="nc" id="L962">                fileBeingProcessed = trimmedFilename;</span>
+<span class="nc" id="L963">                fileBeingProcessedLabel.setText(&quot;Current collection: &quot; + fileBeingProcessed);</span>
+
+                // (re)create the display window for the collection
+<span class="nc" id="L966">                updateJListWindow();</span>
+            }
+<span class="nc" id="L968">            catch ( StudentCollectionException causalException )</span>
+            {
+<span class="nc" id="L970">                JOptionPane.showMessageDialog(null,</span>
+                  &quot;Problem encountered in fetching collection from disk file &quot; +
+                  trimmedFilename + &quot;: error received was &quot; +
+<span class="nc" id="L973">                  causalException.getMessage() + &quot;&lt;--&quot; + causalException.getCause().</span>
+<span class="nc" id="L974">                  getMessage(),</span>
+                  &quot;Fetch collection from disk ERROR &quot;,
+                  JOptionPane.ERROR_MESSAGE);
+<span class="nc" id="L977">            }</span>
+<span class="nc" id="L978">        }</span>
+    }
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    /* class that will act as an event processor for saveToDiskButton.   */
+<span class="nc" id="L985">    private class SaveButtonEventProcessor implements ActionListener</span>
+    {
+        @Override
+        public void actionPerformed( ActionEvent anEvent )
+        {
+<span class="nc" id="L990">            writeCollectionToDisk();</span>
+<span class="nc" id="L991">        }</span>
+
+        /* note - this code is a direct copy of a method from a previous example */
+        private void writeCollectionToDisk()
+        {
+<span class="nc" id="L996">            String fileName = null;</span>
+            do
+            {
+                /* note that this version of JOptionPane.showInputDialog() allows the
+                 * input area of the dialog to be initialized with a value - in this case,
+                 * the value of the previously-processed file. The vale is (by default)
+                 * selected (highlighted) - the user can type over the value, or just
+                 * click &quot;OK&quot; to accept it  */
+<span class="nc" id="L1004">                fileName = (String) JOptionPane.showInputDialog(null,</span>
+                  &quot;Please enter the name of the file that is to contain the contents\n&quot;
+                  + &quot;of the current collection&quot;,
+                  &quot;Save collection to disk&quot;,
+                  JOptionPane.QUESTION_MESSAGE,
+                  null,
+                  null,
+<span class="nc" id="L1011">                  fileBeingProcessed);</span>
+<span class="nc bnc" id="L1012" title="All 4 branches missed.">                if ( fileName == null || fileName.trim().length() == 0 )</span>
+                {
+<span class="nc" id="L1014">                    JOptionPane.showMessageDialog(null,</span>
+                      &quot;You must supply a value!&quot;,
+                      &quot;ERROR - MISSING RESPONSE&quot;,
+                      JOptionPane.ERROR_MESSAGE);
+                }
+            }
+<span class="nc bnc" id="L1020" title="All 4 branches missed.">            while ( fileName == null || fileName.trim().length() == 0 );</span>
+
+<span class="nc" id="L1022">            String trimmedFilename = fileName.trim();</span>
+<span class="nc" id="L1023">            boolean fileIsPresent = StudentCollectionSpec.fileExists(trimmedFilename);</span>
+
+            // if the file exists, warn the user that any information in it is about
+            // to be overwritten and therefore destroyed, and give them a chance to
+            // cancel the operation
+<span class="nc bnc" id="L1028" title="All 2 branches missed.">            if ( fileIsPresent )</span>
+            {
+<span class="nc" id="L1030">                int response = JOptionPane.showConfirmDialog(null,</span>
+                  &quot;The file name that you specified ( &quot; + trimmedFilename + &quot;)\n&quot; +
+                  &quot;already exists - if you proceed, the contents of this file\n&quot; +
+                  &quot;will be overwritten and irrecoverably lost.\n&quot; +
+                  &quot;Click \&quot;OK\&quot; to continue, \&quot;Cancel\&quot; to halt this process&quot;,
+                  &quot;Save collection to disk CONFIRMATION&quot;,
+                  JOptionPane.OK_CANCEL_OPTION);
+                // do not overwrite unless the user chooses &quot;OK&quot;
+<span class="nc bnc" id="L1038" title="All 2 branches missed.">                if ( response == JOptionPane.CANCEL_OPTION )</span>
+                {
+<span class="nc" id="L1040">                    JOptionPane.showMessageDialog(null,</span>
+                      &quot;Current collection NOT WRITTEN TO DISK&quot;,
+                      &quot;Save collection to disk CANCELLED&quot;,
+                      JOptionPane.WARNING_MESSAGE);
+<span class="nc" id="L1044">                    return;</span>
+                }
+            }
+
+<span class="nc" id="L1048">            roster.writeCollectionToDisk(trimmedFilename);</span>
+
+<span class="nc" id="L1050">            JOptionPane.showMessageDialog(null,</span>
+              &quot;Collection successfully written to file &quot; + trimmedFilename,
+              &quot;Save collection to disk CONFIRMATION&quot;,
+              JOptionPane.INFORMATION_MESSAGE);
+
+            /* cause the file name that was written to to be displayed in the GUI */
+<span class="nc" id="L1056">            fileBeingProcessed = trimmedFilename;</span>
+<span class="nc" id="L1057">            fileBeingProcessedLabel.setText(&quot;Current collection: &quot; + fileBeingProcessed);</span>
+
+            // (re)create the display window for the collection
+<span class="nc" id="L1060">            updateJListWindow();</span>
+<span class="nc" id="L1061">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

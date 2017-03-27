@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Student.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCoverage analysis of project &quot;Project03Project-Aparo&quot; (powered by JaCoCo from EclEmma)</a> &gt; <a href="index.source.html" class="el_package">student</a> &gt; <span class="el_source">Student.java</span></div><h1>Student.java</h1><pre class="source lang-java linenums">package student;
+
+
+import java.io.Serializable;
+import studentspec.StudentSpec;
+import static studentspec.StudentSpec.ValidationStatus.*;
+
+
+/**
+ * Implementation of studentspec/StudentSpec interface; provides two create() proxy constructor
+ * methods to be used in instantiating Student objects.
+ *
+ * &lt;p&gt;Copyright: (c) 2016&lt;/p&gt;
+ *
+ * @author J S Kasprzyk
+ * @version 1.6
+ */
+public class Student implements StudentSpec, Serializable
+{
+    private static final long serialVersionUID = -8921835101883579059L;
+
+    private String firstName;
+    private String lastName;
+    private String middleInitial;
+    private String sid;
+    private String major;
+    private double totalDegreeCredits;
+    private double totalQualityPoints;
+
+<span class="fc" id="L30">    private static StudentSpec.StudentValidatorSpec studentValidator =</span>
+      new Student.StudentValidator();
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;------------------------------------------------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    private Student()
+    {
+<span class="fc" id="L38">        super();</span>
+
+        // nothing to do here - this constructor does not initialize attributes
+<span class="fc" id="L41">    }</span>
+
+    /**
+     * Creates a StudentSpec-type object when supplied with valid initialization values.
+     * If any supplied value is not valid, this method will return null.
+     *
+     * @param theSID - SID (7 digits)
+     * @param theFirstName - first name (at least one character in length)
+     * @param theMiddleInitial - middle initial (if null or an empty string, initialized
+     *        to an empty string, otherwise initialized to the first character of the
+     *        supplied string)
+     * @param theLastName - last name (at least one character in length)
+     * @param theMajor - academic major (exactly three characters in length)
+     * @param theTotalDegreeCredits - total degree credits (non-negative, must produce
+     *        a valid GPA in conjunction with total quality points)
+     * @param theTotalQualityPoints - total quality points (non-negative, must produce
+     *        a valid GPA in conjunction with total degree credits)
+     *
+     * @return a StudentSpec-type object; if any supplied value is not value, null
+     *         is returned.
+     *
+     * @throws studentspec.StudentSpec.StudentSpecException if any supplied value is
+     *         not valid
+     */
+    public static StudentSpec create( String theSID,
+      String theFirstName, String theMiddleInitial, String theLastName,
+      String theMajor, double theTotalDegreeCredits, double theTotalQualityPoints )
+      throws StudentSpec.StudentSpecException
+    {
+<span class="fc" id="L70">        Student newStudent = new Student();</span>
+        try
+        {
+<span class="fc" id="L73">            newStudent.setSID(theSID);</span>
+<span class="fc" id="L74">            newStudent.setLastName(theLastName);</span>
+<span class="fc" id="L75">            newStudent.setFirstName(theFirstName);</span>
+<span class="fc" id="L76">            newStudent.setMiddleInitial(theMiddleInitial);</span>
+<span class="fc" id="L77">            newStudent.setMajor(theMajor);</span>
+<span class="fc" id="L78">            newStudent.setGPAIngredients(theTotalDegreeCredits, theTotalQualityPoints);</span>
+<span class="fc" id="L79">            return newStudent;</span>
+        }
+<span class="nc" id="L81">        catch ( StudentSpec.StudentSpecException causalException )</span>
+        {
+<span class="nc" id="L83">            throw new StudentSpec.StudentSpecException(&quot;Problem detected in create(): &quot; +</span>
+<span class="nc" id="L84">              causalException.getMessage(), causalException);</span>
+        }
+    }
+
+    /**
+     * Creates a StudentSpec-type object when supplied with valid initialization values.
+     * If any supplied value is not valid, this method will return null.
+     *
+     * @param theSID - SID (7 digits)
+     * @param theFirstName - first name (at least one character in length)
+     * @param theMiddleInitial - middle initial (if null or an empty string, initialized
+     *        to an empty string, otherwise initialized to the first character of the
+     *        supplied string)
+     * @param theLastName - last name (at least one character in length)
+     * @param theMajor - academic major (exactly three characters in length)
+     *
+     * @return a StudentSpec-type object; if any supplied value is not value, null
+     *         is returned.
+     *
+     * @throws studentspec.StudentSpec.StudentSpecException if any supplied value is
+     *         not valid
+     */
+    public static StudentSpec create( String theSID,
+      String theFirstName, String theMiddleInitial, String theLastName,
+      String theMajor )
+      throws StudentSpec.StudentSpecException
+    {
+<span class="fc" id="L111">        Student newStudent = new Student();</span>
+        try
+        {
+<span class="fc" id="L114">            newStudent.setSID(theSID);</span>
+<span class="fc" id="L115">            newStudent.setLastName(theLastName);</span>
+<span class="fc" id="L116">            newStudent.setFirstName(theFirstName);</span>
+<span class="fc" id="L117">            newStudent.setMiddleInitial(theMiddleInitial);</span>
+<span class="fc" id="L118">            newStudent.setMajor(theMajor);</span>
+<span class="fc" id="L119">            newStudent.setGPAIngredients(</span>
+              DEFAULT_TOTAL_DEGREE_CREDITS, DEFAULT_TOTAL_QUALITY_POINTS);
+<span class="fc" id="L121">            return newStudent;</span>
+        }
+<span class="nc" id="L123">        catch ( StudentSpec.StudentSpecException causalException )</span>
+        {
+<span class="nc" id="L125">            throw new StudentSpec.StudentSpecException(&quot;Problem detected in create(): &quot; +</span>
+<span class="nc" id="L126">              causalException.getMessage(), causalException);</span>
+        }
+    }
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;------------------------------------------------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    @Override
+    public String getSID()
+    {
+<span class="fc" id="L136">        return sid;</span>
+    }
+
+    @Override
+    public String getFirstName()
+    {
+<span class="fc" id="L142">        return firstName;</span>
+    }
+
+    @Override
+    public String getMiddleInitial()
+    {
+<span class="fc" id="L148">        return middleInitial;</span>
+    }
+
+    @Override
+    public String getLastName()
+    {
+<span class="fc" id="L154">        return lastName;</span>
+    }
+
+    @Override
+    public String getMajor()
+    {
+<span class="fc" id="L160">        return major;</span>
+    }
+
+    @Override
+    public double getTotalDegreeCredits()
+    {
+<span class="nc" id="L166">        return totalDegreeCredits;</span>
+    }
+
+    @Override
+    public double getTotalQualityPoints()
+    {
+<span class="nc" id="L172">        return totalQualityPoints;</span>
+    }
+
+    @Override
+    public String toString()
+    {
+<span class="fc" id="L178">        StringBuilder temp = new StringBuilder(sid);</span>
+<span class="fc" id="L179">        temp.append(&quot;|&quot;);</span>
+<span class="fc" id="L180">        temp.append(lastName);</span>
+<span class="fc" id="L181">        temp.append(&quot;|&quot;);</span>
+<span class="fc" id="L182">        temp.append(firstName);</span>
+<span class="fc" id="L183">        temp.append('|');</span>
+<span class="fc" id="L184">        temp.append(middleInitial);</span>
+<span class="fc" id="L185">        temp.append('|');</span>
+<span class="fc" id="L186">        temp.append(major);</span>
+<span class="fc" id="L187">        temp.append(&quot;|&quot;);</span>
+<span class="fc" id="L188">        temp.append(totalDegreeCredits);</span>
+<span class="fc" id="L189">        temp.append('|');</span>
+<span class="fc" id="L190">        temp.append(totalQualityPoints);</span>
+
+<span class="fc" id="L192">        return temp.toString();</span>
+    }
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;------------------------------------------------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    @Override
+    public void setFirstName( String theFirstName ) throws StudentSpec.StudentSpecException
+    {
+<span class="fc" id="L201">        StudentSpec.ValidationStatus result = studentValidator.validateFirstName(theFirstName);</span>
+<span class="pc bpc" id="L202" title="1 of 2 branches missed.">        if ( result != IS_VALID )</span>
+        {
+<span class="nc" id="L204">            throw new StudentSpec.StudentSpecException(&quot;Cannot set first name - &quot; +</span>
+              result);
+        }
+<span class="fc" id="L207">        firstName = theFirstName.trim();</span>
+<span class="fc" id="L208">    }</span>
+
+
+    @Override
+    public void setMiddleInitial( String theMiddleInitial ) throws StudentSpec.StudentSpecException
+    {
+<span class="fc" id="L214">        StudentSpec.ValidationStatus result = studentValidator.validateMiddleInitial(theMiddleInitial);</span>
+<span class="pc bpc" id="L215" title="1 of 2 branches missed.">        if ( result != IS_VALID )</span>
+        {
+<span class="nc" id="L217">            throw new StudentSpec.StudentSpecException(&quot;Cannot set middle initial - &quot; +</span>
+              result);
+        }
+<span class="pc bpc" id="L220" title="1 of 4 branches missed.">        if ( theMiddleInitial == null || theMiddleInitial.trim().length() == 0 )</span>
+        {
+<span class="fc" id="L222">            middleInitial = &quot;&quot;;</span>
+        }
+        else
+        {
+<span class="fc" id="L226">            middleInitial = theMiddleInitial.trim().substring(0, 1);</span>
+        }
+<span class="fc" id="L228">    }</span>
+
+    @Override
+    public void setLastName( String theLastName ) throws StudentSpec.StudentSpecException
+    {
+<span class="fc" id="L233">        StudentSpec.ValidationStatus result = studentValidator.validateLastName(theLastName);</span>
+<span class="pc bpc" id="L234" title="1 of 2 branches missed.">        if ( result != IS_VALID )</span>
+        {
+<span class="nc" id="L236">            throw new StudentSpec.StudentSpecException(&quot;Cannot set last name - &quot; +</span>
+              result);
+        }
+<span class="fc" id="L239">        lastName = theLastName.trim();</span>
+<span class="fc" id="L240">    }</span>
+
+    /**
+     * Set the student's SID. The supplied value must be a string of length 7 and
+     * be all digits.
+     *
+     * @param theSID - the new major
+     *
+     * @return signal indicating the result of attempting to use the supplied value
+     *         to set major
+     */
+    private void setSID( String theSID ) throws StudentSpec.StudentSpecException
+    {
+<span class="fc" id="L253">        StudentSpec.ValidationStatus result = studentValidator.validateSID(theSID);</span>
+<span class="pc bpc" id="L254" title="1 of 2 branches missed.">        if ( result != IS_VALID )</span>
+        {
+<span class="nc" id="L256">            throw new StudentSpec.StudentSpecException(&quot;Cannot set SID - &quot; +</span>
+              result);
+        }
+<span class="fc" id="L259">        sid = theSID.trim();</span>
+<span class="fc" id="L260">    }</span>
+
+    @Override
+    public void setMajor( String theMajor ) throws StudentSpec.StudentSpecException
+    {
+<span class="fc" id="L265">        StudentSpec.ValidationStatus result = studentValidator.validateMajor(theMajor);</span>
+<span class="pc bpc" id="L266" title="1 of 2 branches missed.">        if ( result != IS_VALID )</span>
+        {
+<span class="nc" id="L268">            throw new StudentSpec.StudentSpecException(&quot;Cannot set major - &quot; +</span>
+              result);
+        }
+<span class="fc" id="L271">        major = theMajor.trim();</span>
+<span class="fc" id="L272">    }</span>
+
+    @Override
+    public void setGPAIngredients( double newTotalDegreeCredits,
+      double newTotalQualityPoints ) throws StudentSpec.StudentSpecException
+    {
+<span class="fc" id="L278">        StudentSpec.ValidationStatus result = studentValidator.validateGPAIngredients(</span>
+          newTotalDegreeCredits,
+          newTotalQualityPoints);
+<span class="pc bpc" id="L281" title="1 of 2 branches missed.">        if ( result != IS_VALID )</span>
+        {
+<span class="nc" id="L283">            throw new StudentSpec.StudentSpecException(&quot;Cannot set GPA ingredients - &quot; +</span>
+              result);
+        }
+<span class="fc" id="L286">        totalDegreeCredits = newTotalDegreeCredits;</span>
+<span class="fc" id="L287">        totalQualityPoints = newTotalQualityPoints;</span>
+<span class="fc" id="L288">    }</span>
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;------------------------------------------------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    public static StudentSpec.StudentValidatorSpec getStudentValidator()
+    {
+<span class="nc" id="L295">        return studentValidator;</span>
+    }
+
+    private static class StudentValidator implements StudentSpec.StudentValidatorSpec
+    {
+        private StudentValidator()
+        {
+<span class="fc" id="L302">            super();</span>
+<span class="fc" id="L303">        }</span>
+
+        @Override
+        public StudentSpec.ValidationStatus validateFirstName( String theFirstName )
+        {
+<span class="pc bpc" id="L308" title="1 of 2 branches missed.">            if ( theFirstName == null )</span>
+            {
+<span class="nc" id="L310">                return FIRST_NAME_NULL;</span>
+            }
+<span class="fc" id="L312">            String trimmedFirstName = theFirstName.trim();</span>
+<span class="pc bpc" id="L313" title="1 of 2 branches missed.">            if ( trimmedFirstName.isEmpty() )</span>
+            {
+<span class="nc" id="L315">                return FIRST_NAME_EMPTY;</span>
+            }
+<span class="fc" id="L317">            return IS_VALID;</span>
+        }
+
+        @Override
+        public StudentSpec.ValidationStatus validateMiddleInitial( String theMiddleInitial )
+        {
+<span class="fc" id="L323">            return IS_VALID;</span>
+        }
+
+        @Override
+        public StudentSpec.ValidationStatus validateLastName( String theLastName )
+        {
+<span class="pc bpc" id="L329" title="1 of 2 branches missed.">            if ( theLastName == null )</span>
+            {
+<span class="nc" id="L331">                return LAST_NAME_NULL;</span>
+            }
+<span class="fc" id="L333">            String trimmedLastName = theLastName.trim();</span>
+<span class="pc bpc" id="L334" title="1 of 2 branches missed.">            if ( trimmedLastName.isEmpty() )</span>
+            {
+<span class="nc" id="L336">                return LAST_NAME_EMPTY;</span>
+            }
+<span class="fc" id="L338">            return IS_VALID;</span>
+        }
+
+        @Override
+        public StudentSpec.ValidationStatus validateSID( String theSID )
+        {
+<span class="pc bpc" id="L344" title="1 of 2 branches missed.">            if ( theSID == null )</span>
+            {
+<span class="nc" id="L346">                return SID_NULL;</span>
+            }
+<span class="fc" id="L348">            String trimmedSID = theSID.trim();</span>
+<span class="pc bpc" id="L349" title="1 of 2 branches missed.">            if ( trimmedSID.isEmpty() )</span>
+            {
+<span class="nc" id="L351">                return SID_EMPTY;</span>
+            }
+<span class="pc bpc" id="L353" title="1 of 2 branches missed.">            if ( trimmedSID.length() != 7 )</span>
+            {
+<span class="nc" id="L355">                return SID_NOT_SEVEN_CHARACTERS;</span>
+            }
+
+            try
+            {
+<span class="fc" id="L360">                Integer.parseInt(trimmedSID);</span>
+            }
+<span class="nc" id="L362">            catch ( NumberFormatException causalException )</span>
+            {
+<span class="nc" id="L364">                return SID_NOT_SEVEN_DIGITS;</span>
+<span class="fc" id="L365">            }</span>
+
+<span class="fc" id="L367">            return IS_VALID;</span>
+        }
+
+        @Override
+        public StudentSpec.ValidationStatus validateMajor( String theMajor )
+        {
+<span class="pc bpc" id="L373" title="1 of 2 branches missed.">            if ( theMajor == null )</span>
+            {
+<span class="nc" id="L375">                return MAJOR_NULL;</span>
+            }
+<span class="fc" id="L377">            String trimmedMajor = theMajor.trim();</span>
+<span class="pc bpc" id="L378" title="1 of 2 branches missed.">            if ( trimmedMajor.isEmpty() )</span>
+            {
+<span class="nc" id="L380">                return MAJOR_EMPTY;</span>
+            }
+<span class="pc bpc" id="L382" title="1 of 2 branches missed.">            if ( trimmedMajor.length() != 3 )</span>
+            {
+<span class="nc" id="L384">                return MAJOR_NOT_THREE_CHARACTERS;</span>
+            }
+<span class="fc" id="L386">            return IS_VALID;</span>
+        }
+
+        @Override
+        public StudentSpec.ValidationStatus validateGPAIngredients( double newTotalDegreeCredits,
+          double newTotalQualityPoints )
+        {
+<span class="pc bpc" id="L393" title="1 of 2 branches missed.">            if ( newTotalDegreeCredits &lt; 0.0 )</span>
+            {
+<span class="nc" id="L395">                return TOTAL_DEGREE_CREDITS_NEGATIVE;</span>
+            }
+<span class="pc bpc" id="L397" title="1 of 2 branches missed.">            if ( newTotalQualityPoints &lt; 0.0 )</span>
+            {
+<span class="nc" id="L399">                return TOTAL_QUALITY_POINTS_NEGATIVE;</span>
+            }
+
+<span class="pc bpc" id="L402" title="1 of 4 branches missed.">            if ( newTotalQualityPoints &gt; 0.0 &amp;&amp; newTotalDegreeCredits == 0.0 )</span>
+            {
+                // cannot have quality points if there are no degree credits
+<span class="nc" id="L405">                return ILLEGAL_TOTAL_QUALITY_POINTS_VALUE;</span>
+            }
+            // don't try to calculate GPA if total degree credits is 0
+<span class="fc bfc" id="L408" title="All 2 branches covered.">            if ( newTotalDegreeCredits &gt; 0.0 )</span>
+            {
+<span class="fc" id="L410">                double GPA = newTotalQualityPoints / newTotalDegreeCredits;</span>
+<span class="pc bpc" id="L411" title="2 of 4 branches missed.">                if ( GPA &lt; MIN_GPA || GPA &gt; MAX_GPA )</span>
+                {
+<span class="nc" id="L413">                    return RESULTING_GPA_OUT_OF_RANGE;</span>
+                }
+            }
+<span class="fc" id="L416">            return IS_VALID;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

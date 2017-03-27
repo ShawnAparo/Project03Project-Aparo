@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>StudentCollectionSpec.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCoverage analysis of project &quot;Project03Project-Aparo&quot; (powered by JaCoCo from EclEmma)</a> &gt; <a href="index.source.html" class="el_package">studentcollection</a> &gt; <span class="el_source">StudentCollectionSpec.java</span></div><h1>StudentCollectionSpec.java</h1><pre class="source lang-java linenums">package studentcollection;
+
+
+import java.io.File;
+import java.io.Serializable;
+
+import studentspec.StudentSpec;
+
+import java.util.Iterator;
+
+/**
+ * &lt;p&gt;Title: StudentCollectionSpec&lt;/p&gt;
+ *
+ * &lt;p&gt;Description: specification of the functionalities available for manipulating a
+ * collection of Student objects. Note that this specification is silent on the issue
+ * of duplicate collection entries, that is, this specification neither requires nor
+ * forbids that collection entries be unique (distinguishable from all other collection
+ * entries in some manner).&lt;/p&gt;
+ *
+ * &lt;p&gt;Copyright: (c) 2016&lt;/p&gt;
+ *
+ * @author J S Kasprzyk
+ * @version 1.6
+ */
+public interface StudentCollectionSpec extends Serializable
+{
+    static final long serialVersionUID = -6102861241800042L;
+
+    /**
+     * Default size of collection when invoking parameterless proxy constructor.
+     */
+    public final static int DEFAULT_STUDENT_COLLECTION_CAPACITY = 5000;
+
+    /**
+     * create a StudentCollectionSpec-type object with capacity
+     * StudentCollectionSpec.DEFAULT_STUDENT_COLLECTION_CAPACITY.
+     *
+     * @return a StudentCollectionSpec-type object with capacity
+     * StudentCollectionSpec.DEFAULT_STUDENT_COLLECTION_CAPACITY.
+     */
+    public static StudentCollectionSpec createStudentCollection()
+    {
+<span class="nc" id="L43">        throw new UnsupportedOperationException(&quot;Not supported.&quot;);</span>
+    }
+
+    /**
+     * Create a collection of the specified size. An exception will be thrown if the specified size
+     * is less than or equal to 0. This method hides StudentCollectionSpec.createStudentCollection(int).
+     *
+     * @param capacity capacity of collection.
+     * @return StudentCollectionSpec-type object of specified capacity
+     *
+     * @throws StudentCollectionException if a zero or negative collection capacity is specified.
+     */
+    public static StudentCollectionSpec createStudentCollection( int capacity )
+     throws StudentCollectionException
+    {
+<span class="nc" id="L58">        throw new UnsupportedOperationException(&quot;Not supported.&quot;);</span>
+    }
+
+    /**
+     * return the maximum number of elements that can be stored at any one time
+     *
+     * @return the maximum number of elements that can be stored in the collection
+     */
+    public int getCapacity();
+
+    /**
+     * empty the collection (&quot;throw away&quot; the current contents)
+     */
+    public void reset();
+
+    /**
+     * return whether the collection is full
+     *
+     * @return boolean indicates whether the collection is currently filled to capacity
+     */
+    public boolean isFull();
+
+    /**
+     * return whether the collection is empty
+     *
+     * @return whether the collection is currently empty
+     */
+    public boolean isEmpty();
+
+    /**
+     * return the number of elements currently in the collection
+     *
+     * @return the number of elements currently in the collection
+     */
+    public int getStudentCount();
+
+    /**
+     * return the number of remaining empty positions
+     *
+     * @return the number of remaining empty positions in the collection
+     */
+    public int getSpacesRemaining();
+
+    /**
+     * add a student to the collection
+     *
+     * @param aStudent object to be added to the collection
+     * @throws StudentCollectionException thrown if the collection is full at the time of invocation
+     */
+    public void addStudent(StudentSpec aStudent) throws StudentCollectionException;
+
+    /**
+     * find a student object with an SID that matches the supplied SID;
+     * the Student is NOT removed from the collection
+     *
+     * @param sidKey the SID that a student is to be matched against
+     * @return the student with the specified SID (null if not found)
+     */
+    public StudentSpec retrieveStudentBySID(String sidKey);
+
+    /**
+     * find a student object with an SID that matches the supplied SID;
+     * the student IS REMOVED FROM THE COLLECTION
+     *
+     * @param sidKey the SID that a student is to be matched against
+     * @return the student with the specified SID (null if not found)
+     */
+    public StudentSpec removeStudentBySID(String sidKey);
+
+    /**
+     * return the contents of the collection, represented as a single String
+     *
+     * @return the contents of the collection
+     */
+    @Override
+    public String toString();
+
+    /**
+     * return an object capable of visiting each element of the
+     * collection exactly once
+     *
+     * @return an Iterator object
+     */
+    public Iterator&lt;StudentSpec&gt; createIterator();
+
+    /**
+     * determines if the supplied file name exists. If the file name is prefixed with a complete
+     * path name, the specific folder/file is checked; if there is no path, the file is checked for
+     * in the default working folder. Throws IllegalArgumentException if the supplied file name
+     * is null or blank.
+     *
+     * @param fileName file name
+     * @return true if file name already exists
+     *
+     * @throws IllegalArgumentException if the supplied file name is null or blank.
+     */
+    public static boolean fileExists( String fileName )
+      throws IllegalArgumentException
+    {
+        boolean result;
+        /* determine if a file name was supplied or not */
+<span class="pc bpc" id="L159" title="1 of 2 branches missed.">        if ( fileName == null )</span>
+        {
+<span class="nc" id="L161">            throw new IllegalArgumentException(&quot;File name of 'null' supplied, &quot; +</span>
+              &quot;cannot determine if the file exists&quot;);
+        }
+<span class="fc" id="L164">        String localFileName = fileName.trim();</span>
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">        if ( localFileName.length() == 0 )</span>
+        {
+<span class="nc" id="L167">            throw new IllegalArgumentException(&quot;Blank name supplied, cannot &quot; +</span>
+              &quot;determine if the file exists&quot;);
+        }
+
+        /* create a File object in order to determine if the specified file name exists */
+<span class="fc" id="L172">        File theFile = new File(localFileName);</span>
+<span class="fc" id="L173">        result = theFile.exists();</span>
+
+<span class="fc" id="L175">        return result;</span>
+    }
+
+
+    /**
+     * reads the contents of the supplied file into a StudentCollectionSpec-type object; the
+     * file must have been previously written via Serializable method(s). Exception will be thrown
+     * if the supplied file name is null or blank, does not exist, does not contain a
+     * StudentCollectionSpec-type object, or has a serialVersionUID other than that of the class
+     * version reading the file.
+     *
+     * @param filename the file to be read
+     *
+     * @throws IllegalArgumentException if the supplied file name is null or blank.
+     * @throws StudentCollectionException if the file does not exist, does not contain a
+     * StudentCollectionSpec-type object, has a serialVersionUID other than that of the class
+     * version reading the file, or contains non-serialized data.
+     */
+    public void retrieveCollectionFromDisk( String filename )
+      throws IllegalArgumentException, StudentCollectionException;
+
+    /**
+     * writes the contents of this StudentCollectionSpec object to the supplied file. The file will
+     * be overwritten if it already exists - use this class' fileExists() method to prevent
+     * overwriting if appropriate. Exception will be thrown if the supplied file name is null or
+     * blank or if the file cannot be written to because of system issues.
+     *
+     * @param filename the file to be written
+     *
+     * @throws IllegalArgumentException if the supplied file name is null or blank.
+     * @throws StudentCollectionException if the file cannot be written to because of system issues.
+     */
+    public void writeCollectionToDisk( String filename )
+      throws IllegalArgumentException, StudentCollectionException;
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    /**
+     * Specialized RuntimeException used to report exceptions thrown by classes
+     * implementing StudentCollectionSpec.
+     *
+     * &lt;p&gt;Copyright: (c) 2016&lt;/p&gt;
+     *
+     * @author J S Kasprzyk
+     * @version 1.6
+     */
+    public class StudentCollectionException extends RuntimeException
+    {
+        private static final long serialVersionUID = 8157997298448463708L;
+
+        /* constructor that accepts a direct reason why the exception is to be created. */
+        public StudentCollectionException(String cause)
+        {
+<span class="fc" id="L229">            super(cause);</span>
+<span class="fc" id="L230">        }</span>
+
+        /* constructor that accepts an indirect reason why the exception is created,
+         * along with the direct reason (cause) of the exception. */
+        public StudentCollectionException(String cause, Throwable causalException)
+        {
+<span class="fc" id="L236">            super(cause, causalException);</span>
+<span class="fc" id="L237">        }</span>
+
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>DisplayObjectsAsJList.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCoverage analysis of project &quot;Project03Project-Aparo&quot; (powered by JaCoCo from EclEmma)</a> &gt; <a href="index.source.html" class="el_package">studentgui</a> &gt; <span class="el_source">DisplayObjectsAsJList.java</span></div><h1>DisplayObjectsAsJList.java</h1><pre class="source lang-java linenums">package studentgui;
+
+
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
+import javax.swing.JFrame;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.ScrollPaneLayout;
+
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+/**
+ * JList implementation designed to accept an array of objects and display them as a scrollable
+ * list. Instances will report back to registered listeners when a list entry is selected via
+ * mouse double-click or selection and &quot;enter&quot;
+ *
+ * &lt;p&gt;Copyright: (c) 2016&lt;/p&gt;
+ *
+ * @author J S Kasprzyk
+ * @version 1.6
+ */
+@SuppressWarnings(&quot;serial&quot;)
+public class DisplayObjectsAsJList extends JList&lt;Object&gt;
+{
+    /* flag that determines if diagnostics / informational displays are to be produced.
+     * Note that the displays themselves have been &quot;hidden&quot; in folded code blocks labeled
+     * with &quot;diagnostics&quot;     */
+<span class="nc" id="L42">    private boolean diagnostics = false;</span>
+
+    private ListSelectionListener theListener;
+
+    /* &quot;this&quot; JList will be added to a JScrollPane, which will be added to a JPanel,
+     * which will be added to a Container that represents the content area of a JFrame. */
+    private JScrollPane scrollPane;
+    private JPanel mainPanel;
+    private Container aContainer;
+    private JFrame aWindow;
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;-------------------------------------------------------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    public DisplayObjectsAsJList( String windowTitle, Object[] objectArray )
+    {
+        /* invoke parent JList constructor, supplying initial contents of the list */
+<span class="nc" id="L59">        super(objectArray);</span>
+
+        /* listen for mouse-based interactions with this JList */
+<span class="nc" id="L62">        this.addMouseListener(new JListMouseAdapter());</span>
+
+        /* listen for keyboard-based interactions with this JList */
+<span class="nc" id="L65">        this.addKeyListener(new JListKeyAdapter());</span>
+
+        /* initialize (set up) a GUI to contain and display the JList */
+<span class="nc" id="L68">        this.initialize(windowTitle);</span>
+<span class="nc" id="L69">    }</span>
+
+    public DisplayObjectsAsJList( String windowTitle, Object[] objectArray,
+      boolean diagnosticsSetting )
+    {
+        /* invoke parent JList constructor, supplying initial contents of the list */
+<span class="nc" id="L75">        super(objectArray);</span>
+
+        /* listen for mouse-based interactions with this JList */
+<span class="nc" id="L78">        this.addMouseListener(new JListMouseAdapter());</span>
+
+        /* listen for keyboard-based interactions with this JList */
+<span class="nc" id="L81">        this.addKeyListener(new JListKeyAdapter());</span>
+
+        /* initialize (set up) a GUI to contain and display the JList */
+<span class="nc" id="L84">        this.initialize(windowTitle);</span>
+
+        /* set the diagnostics flag to the supplied value */
+<span class="nc" id="L87">        this.diagnostics = diagnosticsSetting;</span>
+<span class="nc" id="L88">    }</span>
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;----------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    private void initialize( String windowTitle )
+    {
+        /* limit selection to a single list entry in the JList */
+<span class="nc" id="L96">        this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);</span>
+        /* set each row of the JList to a fixed height (for aesthetic and
+         * spacing purposes)  */
+<span class="nc" id="L99">        this.setFixedCellHeight(20);</span>
+
+        // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;---------------&quot;&gt;
+        /* */
+        // &lt;/editor-fold&gt;
+
+        /* create a JScrollPane and add this list to it */
+<span class="nc" id="L106">        scrollPane = new JScrollPane(null,</span>
+          ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+          ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+<span class="nc" id="L109">        scrollPane.setLayout(new ScrollPaneLayout());</span>
+        /* setting the preferred size of the scroll pane is critical to getting the
+         * scroll bars to appear - if the preferred size is NOT set, the vertical
+         * scroll bar tends to appear as needed, but the horizontal one does not -
+         * instead, the scroll pane tends to expand horizontally indefinitely as needed
+         *
+         * also, note that the vertical dimension (100) is consciously chosen as an
+         * exact multiple of the fixed cell height (20) - this neatly fits a set of rows
+         * into the scroll pane without any rows being &quot;cut in half&quot; horizontally   */
+<span class="nc" id="L118">        scrollPane.setPreferredSize(new Dimension(300, 100));</span>
+        /* add &quot;this&quot; JList to the viewport of the scroll pane */
+<span class="nc" id="L120">        scrollPane.getViewport().add(this);</span>
+
+        // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;---------------&quot;&gt;
+        /* */
+        // &lt;/editor-fold&gt;
+
+        /* create a main panel and add the scroll pane to it */
+<span class="nc" id="L127">        mainPanel = new JPanel(new FlowLayout());</span>
+<span class="nc" id="L128">        mainPanel.add(scrollPane);</span>
+
+        // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;---------------&quot;&gt;
+        /* */
+        // &lt;/editor-fold&gt;
+
+        /* create a container and add the main panel to it */
+<span class="nc" id="L135">        aContainer = new Container();</span>
+<span class="nc" id="L136">        aContainer.setLayout(new BorderLayout());</span>
+<span class="nc" id="L137">        aContainer.add(mainPanel, BorderLayout.CENTER);</span>
+
+        // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;---------------&quot;&gt;
+        /* */
+        // &lt;/editor-fold&gt;
+
+        /* create a window and add the container to it */
+<span class="nc" id="L144">        aWindow = new JFrame(windowTitle);</span>
+        /* create a FlowLayout object, then customize it */
+<span class="nc" id="L146">        FlowLayout windowLayout = new FlowLayout();</span>
+        /* insert some &quot;padding&quot; space above and below the components in the window */
+<span class="nc" id="L148">        windowLayout.setVgap(10);</span>
+<span class="nc" id="L149">        aWindow.setLayout(windowLayout);</span>
+<span class="nc" id="L150">        aWindow.setContentPane(aContainer);</span>
+<span class="nc" id="L151">        aWindow.setPreferredSize(new Dimension(350, 150));</span>
+        /* center the window on the screen */
+<span class="nc" id="L153">        aWindow.setLocationRelativeTo(null);</span>
+<span class="nc" id="L154">        aWindow.pack();</span>
+        /* instead of having the window close itself when the user clicks &quot;close&quot; (&quot;X&quot;),
+         * have the window hide itself - if the window is required by the user in the
+         * future, it's more efficient to make the existing window visible than it is
+         * to re-create the window and all of its components  */
+<span class="nc" id="L159">        aWindow.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);</span>
+<span class="nc" id="L160">        aWindow.setVisible(false);</span>
+<span class="nc" id="L161">    }</span>
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;-------------------------------------------------------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    @Override
+    public void addListSelectionListener( ListSelectionListener aListener )
+    {
+        /* remember who is listening to this JList */
+        // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;diagnostic displays&quot;&gt;
+<span class="nc bnc" id="L171" title="All 2 branches missed.">        if ( diagnostics )</span>
+        {
+<span class="nc" id="L173">            System.out.println(&quot;In ShowAllStudentsAsJList.addListSelectionListener() &quot;</span>
+<span class="nc" id="L174">              + &quot;- aListener is &quot; + aListener.getClass() + &quot; (&quot; + aListener.hashCode()</span>
+              + &quot;)&quot;);
+<span class="nc" id="L176">            System.out.flush();</span>
+        }// &lt;/editor-fold&gt;
+<span class="nc" id="L178">        this.theListener = aListener;</span>
+<span class="nc" id="L179">    }</span>
+
+    /* override the setVisible() method, replacing the default implementation with
+     * one that tells the JFrame that encloses this JList to set its visibility. The
+     * default implementation of this method affects only the visibility of the JList
+     * component of the window */
+    @Override
+    public void setVisible( boolean isVisible )
+    {
+<span class="nc" id="L188">        positionTheWindow();</span>
+<span class="nc" id="L189">        aWindow.setVisible(isVisible);</span>
+<span class="nc" id="L190">    }</span>
+
+    private void positionTheWindow()
+    {
+        /* determine the location and width of the component that is listening */
+<span class="nc" id="L195">        int listenerXLocation = ( ( Component ) theListener ).getX();</span>
+<span class="nc" id="L196">        int listenerYLocation = ( ( Component ) theListener ).getY();</span>
+<span class="nc" id="L197">        int listenerWidth = ( ( Component ) theListener ).getWidth();</span>
+
+        /* determine the width and height of this window that contains this JList */
+<span class="nc" id="L200">        int windowWidth = aWindow.getWidth();</span>
+<span class="nc" id="L201">        int windowHeight = aWindow.getHeight();</span>
+
+        /* make this window appear just above the listener */
+<span class="nc" id="L204">        int windowYLocation = listenerYLocation - windowHeight;</span>
+        /* center this window on the listener */
+<span class="nc" id="L206">        int windowXLocation = listenerXLocation + ( ( listenerWidth - windowWidth ) / 2 );</span>
+
+        /* set the location of this window */
+<span class="nc" id="L209">        aWindow.setLocation(windowXLocation, windowYLocation);</span>
+<span class="nc" id="L210">    }</span>
+
+    /* override the setListData() method, first setting the list data, then re-validating
+     * the JFrame that encloses the JList to insure that the JFrame is sized
+     * appropriately     */
+    @Override
+    public void setListData( Object[] objectList )
+    {
+<span class="nc" id="L218">        super.setListData(objectList);</span>
+<span class="nc" id="L219">        aWindow.pack();</span>
+<span class="nc" id="L220">    }</span>
+
+    public void setListTitle( String listTitle )
+    {
+
+<span class="nc" id="L225">        aWindow.setTitle(listTitle);</span>
+<span class="nc" id="L226">        aWindow.pack();</span>
+<span class="nc" id="L227">    }</span>
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    /* MouseAdapter is a convenience class that makes it easy to listen for specific
+     * mouse actions and ignore all others */
+<span class="nc" id="L234">    private class JListMouseAdapter extends MouseAdapter</span>
+    {
+        @Override
+        public void mouseClicked( MouseEvent aMouseEvent )
+        {
+            /* if there's no one listening, don't bother to process the event */
+<span class="nc bnc" id="L240" title="All 2 branches missed.">            if ( theListener == null )</span>
+            {
+<span class="nc" id="L242">                return;</span>
+            }
+
+            /* check for a double-click */
+<span class="nc bnc" id="L246" title="All 2 branches missed.">            if ( aMouseEvent.getClickCount() == 2 )</span>
+            {
+                // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;diagnostic displays&quot;&gt;
+<span class="nc bnc" id="L249" title="All 2 branches missed.">                if ( diagnostics )</span>
+                {
+<span class="nc" id="L251">                    System.out.println(&quot;In JListMouseAdapter&quot;);</span>
+<span class="nc" id="L252">                    System.out.println(&quot;   Selected object is &quot; + getSelectedValue());</span>
+<span class="nc" id="L253">                    System.out.println(</span>
+                      &quot;   Sending VALUE_CHANGED from &quot;
+                      + &quot;ShowAllStudentsAsJList.JListMouseAdapter.mouseClicked() &quot;
+<span class="nc" id="L256">                      + &quot;to ListSelectionListener &quot; + theListener.getClass()</span>
+<span class="nc" id="L257">                      + &quot; (&quot; + theListener.hashCode() + &quot;)&quot;);</span>
+<span class="nc" id="L258">                    System.out.flush();</span>
+
+<span class="nc" id="L260">                    System.out.println(&quot;   this: &quot;</span>
+<span class="nc" id="L261">                      + DisplayObjectsAsJList.this.getClass() + &quot; (&quot; + DisplayObjectsAsJList.this.</span>
+<span class="nc" id="L262">                      hashCode() + &quot;)&quot;);</span>
+<span class="nc" id="L263">                    System.out.println(&quot;   getSelectedIndex() = &quot; + getSelectedIndex());</span>
+                }// &lt;/editor-fold&gt;
+
+                /* inform the listener that the JList's selection has changed */
+<span class="nc" id="L267">                theListener.valueChanged(new ListSelectionEvent(this,</span>
+<span class="nc" id="L268">                  getSelectedIndex(), getSelectedIndex(), false));</span>
+
+                // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;diagnostic displays&quot;&gt;
+<span class="nc bnc" id="L271" title="All 2 branches missed.">                if ( diagnostics )</span>
+                {
+<span class="nc" id="L273">                    System.out.println(</span>
+                      &quot;   SENT VALUE_CHANGED from &quot;
+                      + &quot;ShowAllStudentsAsJList.JListMouseAdapter.mouseClicked() &quot;
+<span class="nc" id="L276">                      + &quot;to ListSelectionListener &quot; + theListener.getClass()</span>
+<span class="nc" id="L277">                      + &quot; (&quot; + theListener.hashCode() + &quot;)&quot;);</span>
+<span class="nc" id="L278">                    System.out.flush();</span>
+                }// &lt;/editor-fold&gt;
+<span class="nc" id="L280">                aMouseEvent.consume();</span>
+            }
+<span class="nc" id="L282">        }</span>
+    }
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    /* KeyAdapter is a convenience class that makes it easy to listen for specific
+     * keyboard actions and ignore all others */
+<span class="nc" id="L290">    private class JListKeyAdapter extends KeyAdapter</span>
+    {
+        @Override
+        public void keyReleased( KeyEvent aKeyEvent )
+        {
+            /* if there's no one listening, don't bother to process the event */
+<span class="nc bnc" id="L296" title="All 2 branches missed.">            if ( theListener == null )</span>
+            {
+<span class="nc" id="L298">                return;</span>
+            }
+
+            /* check for the &quot;enter&quot; key being released */
+<span class="nc bnc" id="L302" title="All 2 branches missed.">            if ( aKeyEvent.getKeyCode() == KeyEvent.VK_ENTER )</span>
+            {
+                // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;diagnostic displays&quot;&gt;
+<span class="nc bnc" id="L305" title="All 2 branches missed.">                if ( diagnostics )</span>
+                {
+<span class="nc" id="L307">                    System.out.println(&quot;In JListKeyAdapter&quot;);</span>
+<span class="nc" id="L308">                    System.out.println(</span>
+                      &quot;   Sending VALUE_CHANGED from &quot;
+                      + &quot;ShowAllStudentsAsJList.JListKeyAdapter.keyReleased() &quot;
+<span class="nc" id="L311">                      + &quot;to ListSelectionListener &quot; + theListener.getClass()</span>
+<span class="nc" id="L312">                      + &quot; (&quot; + theListener.hashCode() + &quot;)&quot;);</span>
+<span class="nc" id="L313">                    System.out.flush();</span>
+
+<span class="nc" id="L315">                    System.out.println(&quot;   this: &quot;</span>
+<span class="nc" id="L316">                      + DisplayObjectsAsJList.this.getClass() + &quot; (&quot; + DisplayObjectsAsJList.this.</span>
+<span class="nc" id="L317">                      hashCode() + &quot;)&quot;);</span>
+<span class="nc" id="L318">                    System.out.println(&quot;   getSelectedIndex() = &quot; + getSelectedIndex());</span>
+                }// &lt;/editor-fold&gt;
+
+                /* inform the listener that the JList's selection has changed
+                 */
+<span class="nc" id="L323">                theListener.valueChanged(new ListSelectionEvent(this,</span>
+<span class="nc" id="L324">                  getSelectedIndex(), getSelectedIndex(), false));</span>
+
+                // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;diagnostic displays&quot;&gt;
+<span class="nc bnc" id="L327" title="All 2 branches missed.">                if ( diagnostics )</span>
+                {
+<span class="nc" id="L329">                    System.out.println(</span>
+                      &quot;   SENT VALUE_CHANGED from &quot;
+                      + &quot;ShowAllStudentsAsJList.JListKeyAdapter.mouseClicked() &quot;
+<span class="nc" id="L332">                      + &quot;to ListSelectionListener &quot; + theListener.getClass()</span>
+<span class="nc" id="L333">                      + &quot; (&quot; + theListener.hashCode() + &quot;)&quot;);</span>
+<span class="nc" id="L334">                    System.out.flush();</span>
+                }// &lt;/editor-fold&gt;
+<span class="nc" id="L336">                aKeyEvent.consume();</span>
+            }
+<span class="nc" id="L338">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

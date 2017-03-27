@@ -1,0 +1,606 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>StudentCollection.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCoverage analysis of project &quot;Project03Project-Aparo&quot; (powered by JaCoCo from EclEmma)</a> &gt; <a href="index.source.html" class="el_package">studentcollection</a> &gt; <span class="el_source">StudentCollection.java</span></div><h1>StudentCollection.java</h1><pre class="source lang-java linenums">package studentcollection;
+
+
+//&lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;class-wide notes&quot;&gt;
+/**
+ * Implementation of the studentcollection.StudentCollectionSpec interface. This implementation
+ * provides fixed-size storage capacity for storing StudentSpec-type objects. Additional features
+ * include the ability to store and/or retrieve a class instance to/from disk and to determine if
+ * a file exists.
+ */
+//&lt;/editor-fold&gt;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InvalidClassException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+import student.Student;
+import studentcollection.StudentCollectionSpec.StudentCollectionException;
+import studentspec.StudentSpec;
+
+/**
+ * &lt;p&gt;
+ * Title: StudentCollection&lt;/p&gt;
+ * &lt;p&gt;
+ * &lt;p&gt;
+ * Description: Implementation of studentcollection/StudentCollectionSpecification.
+ * Students are stored as an &quot;unordered&quot; collection of values stored in a storage area of specified
+ * and finite capacity. Students are initially stored in the order of arrival, and later removals
+ * can change the internal ordering. This implementation allows duplicate entries (that is, the
+ * collection is not checked to determine if it is already in the collection when addStudent() is
+ * invoked).&lt;/p&gt;
+ * &lt;p&gt;
+ * &lt;p&gt;
+ * Since the StudentCollectionSpecification which this StudentCollection class implements is
+ * silent with respect to collection entry uniqueness, this implementation chooses to allow
+ * collection entries which are duplicates of already-existing entries. This means that any two
+ * entries might each contain exactly the value; more generally, it means that a given student
+ * could be added to the collection more than once.&lt;/p&gt;
+ * &lt;p&gt;
+ * &lt;p&gt;
+ * If client software wishes to prevent duplicate entries, it is the responsibility of the client
+ * software to determine if a student which is about to be added to the collection is already in the
+ * collection: this can be accomplished by client software invoking the retrieveStudentBySID()
+ * method and checking the result.&lt;/p&gt;
+ * &lt;p&gt;
+ * &lt;p&gt;
+ * Copyright: (c) 2016&lt;/p&gt;
+ *
+ * @author J S Kasprzyk
+ * @version 1.6
+ */
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">public class StudentCollection implements StudentCollectionSpec, Serializable</span>
+{
+    @SuppressWarnings(&quot;FieldNameHidesFieldInSuperclass&quot;)
+    private static final long serialVersionUID = -6102872921808735175L;
+
+    /*
+     * local constant, used as a return signal from a PRIVATE method
+     */
+    private static final int SEARCH_KEY_NOT_FOUND = -1;
+    /*
+     * handle for the storage array for the objects to be stored
+     */
+    private StudentSpec[] elements;
+    /*
+     * index of the next position to be filled
+     */
+    private int nextEmptyPosition;
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;------------------------------------------------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+    private StudentCollection( int maxSize )
+<span class="fc" id="L80">    {</span>
+        /*
+         * create storage space
+         */
+<span class="fc" id="L84">        elements = new StudentSpec[maxSize];</span>
+        /*
+         * fill the array from left to right, starting at position 0
+         */
+<span class="fc" id="L88">        nextEmptyPosition = 0;</span>
+<span class="fc" id="L89">    }</span>
+
+    /**
+     * {@inheritDoc}
+     * &lt;p&gt;
+     * &lt;br&gt;&lt;br&gt;&lt;b&gt;NOTE: This method hides StudentCollectionSpec.createStudentCollection()&lt;/b&gt;
+     */
+    public static StudentCollectionSpec createStudentCollection()
+    {
+<span class="fc" id="L98">        return new StudentCollection(DEFAULT_STUDENT_COLLECTION_CAPACITY);</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     * &lt;p&gt;
+     * &lt;br&gt;&lt;br&gt;&lt;b&gt;NOTE: This method hides StudentCollectionSpec.createStudentCollection()&lt;/b&gt;
+     */
+    public static StudentCollectionSpec createStudentCollection( int capacity )
+      throws StudentCollectionException
+    {
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        if ( capacity &lt;= 0 )</span>
+        {
+<span class="fc" id="L111">            throw new StudentCollectionException(&quot;Cannot create a collection &quot; +</span>
+              &quot;of capacity &lt;= 0&quot;);
+        }
+<span class="fc" id="L114">        return new StudentCollection(capacity);</span>
+    }
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;------------------------------------------------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+    @Override
+    public int getCapacity()
+    {
+<span class="fc" id="L122">        return elements.length;</span>
+    }
+
+    @Override
+    public void reset()
+    {
+        //SA inserted looping condition to remove each element.
+<span class="fc bfc" id="L129" title="All 2 branches covered.">        for ( int i = 0; i &lt; nextEmptyPosition; i++ )</span>
+        {
+<span class="fc" id="L131">            elements[i] = null;</span>
+        }
+<span class="fc" id="L133">        nextEmptyPosition = 0;</span>
+<span class="fc" id="L134">    }</span>
+
+    @Override
+    public boolean isFull()
+    {
+<span class="fc bfc" id="L139" title="All 2 branches covered.">        return nextEmptyPosition &gt;= elements.length;</span>
+    }
+
+    @Override
+    public boolean isEmpty()
+    {
+<span class="fc bfc" id="L145" title="All 2 branches covered.">        return nextEmptyPosition == 0;</span>
+    }
+
+    @Override
+    public int getStudentCount()
+    {
+<span class="fc" id="L151">        return nextEmptyPosition;</span>
+    }
+
+    @Override
+    public void addStudent( StudentSpec anElement ) throws StudentCollectionException
+    {
+        /*
+         * make sure that there is something to store
+         */
+<span class="fc bfc" id="L160" title="All 2 branches covered.">        if ( anElement == null )</span>
+        {
+<span class="fc" id="L162">            throw new StudentCollectionException(&quot;Null handle supplied&quot;);</span>
+        }
+        /*
+         * check if there is any room for another element
+         */
+
+        //SA changed to check if greater than or equal to capacity. If so, expand capacity
+<span class="fc bfc" id="L169" title="All 2 branches covered.">        if ( this.getStudentCount() == this.getCapacity() )</span>
+        {
+<span class="fc" id="L171">            throw new StudentCollectionException(&quot;No room in collection &quot; +</span>
+              &quot;for another element&quot;);
+        }
+
+        /*
+         * place the incoming student in the next empty position in the array
+         */
+<span class="fc" id="L178">        elements[nextEmptyPosition] = anElement;</span>
+
+        /*
+         * the array position &quot;pointed to&quot; by nextEmptyPosition was just filled, so increment
+         * nextEmptyPosition so that it will &quot;point to&quot; the next location
+         */
+<span class="fc" id="L184">        nextEmptyPosition++;</span>
+<span class="fc" id="L185">    }</span>
+
+//    private StudentSpec[] expandArray(Object[] anArray)
+//    {
+//        /* make the new array 50% bigger than the current array  */
+//        int newSize = ( int ) (anArray.length * 1.5 + 0.5);
+//        /* create the new array  */
+//
+//        //***SA Changed to be an array of StudentSpec objects***
+//        StudentSpec[] biggerArray = new StudentSpec[newSize];
+//
+//        /* copy the contents of the current array into the new array   */
+//        System.arraycopy(anArray, 0,
+//          biggerArray, 0,
+//          anArray.length);
+//
+//        return biggerArray;
+//    }
+    @Override
+    public StudentSpec retrieveStudentBySID( String searchKey ) throws IllegalArgumentException
+    {
+        //***SA added error if String is null
+<span class="fc bfc" id="L207" title="All 2 branches covered.">        if ( searchKey == null )</span>
+        {
+<span class="fc" id="L209">            throw new IllegalArgumentException(&quot;Search key can't be null&quot;);</span>
+        }
+
+<span class="fc" id="L212">        StudentSpec result = null;</span>
+        /*
+         * try to locate a student with a matching identifier (key)
+         */
+<span class="fc" id="L216">        int foundPosition = findPositionWithMatchingKey(searchKey);</span>
+
+<span class="fc bfc" id="L218" title="All 2 branches covered.">        if ( foundPosition != SEARCH_KEY_NOT_FOUND )</span>
+        {
+<span class="fc" id="L220">            result = elements[foundPosition];</span>
+        }
+
+<span class="fc" id="L223">        return result;</span>
+    }
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;ALTERNATE implementation of retrieveStudentBySID()&quot;&gt;
+    /* Note - this method provides an ALERNATE IMPLEMENTATION of the previous method, using an
+     * Iterator object to examine the contents of the collection rather than manually defining and
+     * manipulating an index variable. This implementation will be less efficient than the previous
+     * method, but may be more easily understood and maintained as the detailed manipulation logic
+     * is embedded in the Iterator implementation.
+     */
+    // &lt;/editor-fold&gt;
+//    public StudentSpec retrieveByKeyUsingAnIterator( String searchKey )
+//    {
+//        if ( searchKey != null )
+//        {
+//            /* create an iterator object to manage examining the collection  */
+//            Iterator&lt;StudentSpec&gt; anIterator = this.createIterator();
+//            /* as long as there is another element to look at, get it an look at it */
+//            while ( anIterator.hasNext() )
+//            {
+//                /* get the next element in th ecollection  */
+//                StudentSpec aStudent = anIterator.next();
+//                /* check if the retrieved element matches the supplied search key */
+//                if ( aStudent.getSID().equals(searchKey) )
+//                {
+//                    return aStudent;
+//                }
+//            }
+//        }
+//
+//        /* no match was made before running out of elements  */
+//        return null;
+//    }
+    private int findPositionWithMatchingKey( String searchKey )
+    {
+        //&lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;notes on the use of 'assert'&quot;&gt;
+        /*
+         * This is a PRIVATE method, so verify that the parameter value is non-null: if it IS null,
+         * there is a logic error in the invoking method (which is part of this class!), and program
+         * execution should be stopped so that the logic error can be tracked down and fixed.
+         *
+         * Note the use of &quot;assert&quot; rather than &quot;if&quot; - this is appropriate because this is a PRIVATE
+         * method and under our direct control: since we control all of the methods that might
+         * invoke THIS method, we can assume that we have previously insured that the supplied
+         * search key was non-null - so, if the supplied searchKey IS null, the only explanation is
+         * that there's a logic mistake somewhere in this class. If the assert statement evaluates
+         * to true, execution continues; if it evaluates to false, then a runtime exception is
+         * thrown that should cause program termination.
+         */
+        //&lt;/editor-fold&gt;
+<span class="pc bpc" id="L273" title="2 of 4 branches missed.">        assert searchKey != null;</span>
+
+<span class="fc" id="L275">        int index = 0;</span>
+
+        /*
+         * keep examining elements of the array as long as there are filled positions remaining to
+         * be examined AND a match has not yet been made
+         */
+<span class="fc bfc" id="L281" title="All 4 branches covered.">        while ( index &lt; nextEmptyPosition &amp;&amp; !elements[index].getSID().equals(searchKey) )</span>
+        {
+            /*
+             * the current position of the array does not have a matching SID - move on to the next
+             * position
+             */
+<span class="fc" id="L287">            index++;</span>
+        }
+
+        /*
+         * if &quot;index&quot; is less than the next empty position in the collection, the search stopped
+         * because a match was made, so return the POSITION where the match was located
+         */
+        int result;
+<span class="fc bfc" id="L295" title="All 2 branches covered.">        if ( index &lt; nextEmptyPosition )</span>
+        {
+<span class="fc" id="L297">            result = index;</span>
+        }
+        else
+        {
+<span class="fc" id="L301">            result = SEARCH_KEY_NOT_FOUND;</span>
+        }
+<span class="fc" id="L303">        return result;</span>
+    }
+
+    @Override
+    public StudentSpec removeStudentBySID( String searchKey )
+    {
+<span class="fc" id="L309">        StudentSpec result = null;</span>
+<span class="fc bfc" id="L310" title="All 2 branches covered.">        if ( searchKey != null )</span>
+        {
+            /*
+             * try to locate a student with a matching SID
+             */
+<span class="fc" id="L315">            int foundPosition = findPositionWithMatchingKey(searchKey);</span>
+
+<span class="fc bfc" id="L317" title="All 2 branches covered.">            if ( foundPosition != SEARCH_KEY_NOT_FOUND )</span>
+            {
+<span class="fc" id="L319">                StudentSpec temp = elements[foundPosition];</span>
+
+                //if Student is not last in list, last in list is moved to position
+<span class="fc bfc" id="L322" title="All 2 branches covered.">                if ( foundPosition &lt; nextEmptyPosition - 1 )</span>
+                {
+<span class="fc" id="L324">                    elements[foundPosition] = elements[nextEmptyPosition - 1];</span>
+                }
+
+                //last in list is deleted
+<span class="fc" id="L328">                elements[nextEmptyPosition - 1] = null;</span>
+
+                //***SA ADDED THIS SECTION***
+<span class="fc" id="L331">                nextEmptyPosition--;</span>
+
+<span class="fc" id="L333">                result = temp;</span>
+            }
+        }
+
+<span class="fc" id="L337">        return result;</span>
+    }
+
+    //&lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;explanation of why this method is commented&quot;&gt;
+    /*
+     * This PRIVATE method is an example of a commonly-implemented &quot;utility&quot; method that is helpful
+     * during initial testing of a &quot;collection&quot; class - it provides a quick way to display the
+     * actual contents of the collection, edited for developer (as opposed to user) readability. It
+     * can and almost always does include information that would normally be inadvisable to make
+     * available to the &quot;outside world&quot;.
+     *
+     * After testing is completed, methods like this are often deleted. Commenting them has the same
+     * affect as removing them in terms of execution efficiency and memory requirements, but offers
+     * the added ability to &quot;reactivate&quot; the code in the future if it is needed during an
+     * enhancement effort.
+     */
+    //&lt;/editor-fold&gt;
+//    private void displayContents()
+//    {
+//        System.out.println(&quot; Current collection contents&quot;);
+//        if ( nextEmptyPosition &gt; 0 )
+//        {
+//            for ( int i = 0; i &lt;
+//              nextEmptyPosition; i++ )
+//            {
+//                System.out.println(&quot;  (&quot; + (i + 1) + &quot;) &quot; + elements[i].toString());
+//            }
+//            System.out.flush();
+//        }
+//        else
+//        {
+//            System.out.println(&quot;  The collection is currently empty&quot;);
+//            System.out.flush();
+//        }
+//    }
+    @Override
+    public String toString()
+    {
+        /*
+         * define a work area into which all of the entries of the collection will be concanentated.
+         */
+<span class="fc" id="L378">        StringBuilder result = new StringBuilder(500);</span>
+        /*
+         * if the collection is empty, return String that explicitly indicates that fact
+         */
+<span class="fc bfc" id="L382" title="All 2 branches covered.">        if ( nextEmptyPosition == 0 )</span>
+        {
+<span class="fc" id="L384">            result.append(&quot;empty collection&quot;);</span>
+        }
+        else
+        {
+            /*
+             * initialize the work area with the entry in the initial position
+             */
+<span class="fc" id="L391">            result.append(elements[0].toString());</span>
+
+            /*
+             * for all remaining entries, concatenate a delimiter (&amp;) and the entry onto the end of
+             * the work area
+             */
+<span class="fc bfc" id="L397" title="All 2 branches covered.">            for ( int index = 1; index &lt; nextEmptyPosition; index++ )</span>
+            {
+<span class="fc" id="L399">                result.append('&amp;');</span>
+<span class="fc" id="L400">                result.append(elements[index]);</span>
+            }
+        }
+<span class="fc" id="L403">        return result.toString();</span>
+    }
+
+    @Override
+    public int getSpacesRemaining()
+    {
+<span class="fc" id="L409">        return elements.length - nextEmptyPosition;</span>
+    }
+
+    @Override
+    public Iterator&lt;StudentSpec&gt; createIterator()
+    {
+<span class="fc" id="L415">        return new CollectionIterator();</span>
+    }
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;------------------------------------------------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+    /**
+     * &lt;p&gt;
+     * Title:CollectionIterator&lt;/p&gt;
+     * &lt;p/&gt;
+     * &lt;p&gt;
+     * Description: implementation of the standard Iterator functionalities available for
+     * manipulating a collection of student objects. This class does not provide an implementation
+     * for remove() and will throw an UnsupportedOperationException if remove() is invoked.&lt;/p&gt;
+     * &lt;p/&gt;
+     * &lt;p&gt;
+     * &lt;p&gt;
+     * Copyright: (c) 2016&lt;/p&gt;
+     *
+     * @author J S Kasprzyk
+     * @version 1.6
+     */
+    private class CollectionIterator implements Iterator&lt;StudentSpec&gt;
+    {
+        private int nextPositionToVisit;
+
+        CollectionIterator()
+<span class="fc" id="L441">        {</span>
+<span class="fc" id="L442">            nextPositionToVisit = 0;</span>
+<span class="fc" id="L443">        }</span>
+
+        @Override
+        public boolean hasNext()
+        {
+<span class="fc bfc" id="L448" title="All 2 branches covered.">            return nextPositionToVisit &lt; nextEmptyPosition;</span>
+        }
+
+        @Override
+        public StudentSpec next()
+        {
+<span class="fc bfc" id="L454" title="All 2 branches covered.">            if ( nextPositionToVisit &lt; nextEmptyPosition )</span>
+            {
+                StudentSpec temp;
+<span class="fc" id="L457">                temp = elements[nextPositionToVisit];</span>
+<span class="fc" id="L458">                nextPositionToVisit++;</span>
+
+<span class="fc" id="L460">                return temp;</span>
+            }
+            else
+            {
+<span class="fc" id="L464">                throw new NoSuchElementException(&quot;No remaining elements in &quot; +</span>
+                  &quot;the collection&quot;);
+            }
+        }
+
+        @Override
+        public void remove() throws UnsupportedOperationException
+        {
+<span class="fc" id="L472">            throw new UnsupportedOperationException(&quot;Remove is not supported &quot; +</span>
+              &quot;for this iterator&quot;);
+        }
+    }
+
+    // &lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;-------------------------------------------------------------------------------------&quot;&gt; /* */
+    // &lt;/editor-fold&gt;
+
+    /* methods relating to persisting the collection to disk */
+    @Override
+    public void writeCollectionToDisk( String targetFileName ) throws
+      IllegalArgumentException, StudentCollectionException
+    {
+<span class="fc bfc" id="L485" title="All 2 branches covered.">        if ( targetFileName == null )</span>
+        {
+<span class="fc" id="L487">            throw new IllegalArgumentException(&quot;File name of 'null' supplied, cannot write&quot;);</span>
+        }
+<span class="fc" id="L489">        String localTargetFileName = targetFileName.trim();</span>
+<span class="fc bfc" id="L490" title="All 2 branches covered.">        if ( localTargetFileName.length() == 0 )</span>
+        {
+<span class="fc" id="L492">            throw new IllegalArgumentException(&quot;Blank name supplied, cannot write&quot;);</span>
+        }
+
+        try
+        {
+
+            /* create a File object that will be used to reference the supplied
+             * file name. */
+<span class="fc" id="L500">            File theFile = new File(localTargetFileName);</span>
+
+            /* each of the next three statements MUST be enclosed in a try/catch structure
+             * because each can throw an IOException. */
+
+ /* attempt to create an ObjectOutputStream
+             * that &quot;wraps&quot; the created File. */
+<span class="fc" id="L507">            ObjectOutputStream theOutputFile =</span>
+              new ObjectOutputStream(new FileOutputStream(theFile));
+            /* attempt to write the collection to the file. */
+<span class="fc" id="L510">            theOutputFile.writeObject(this);</span>
+            /* attempt to close the file. */
+<span class="fc" id="L512">            theOutputFile.close();</span>
+        }
+<span class="nc" id="L514">        catch ( IOException causalException )</span>
+        {
+            /* problem writing information to disk - nothing changes with respect to
+             * the collection. */
+<span class="nc" id="L518">            throw new StudentCollectionException(&quot;Problem writing to file&quot; +</span>
+<span class="nc" id="L519">              localTargetFileName + &quot;: &quot; + causalException.getMessage(), causalException);</span>
+<span class="fc" id="L520">        }</span>
+<span class="fc" id="L521">    }</span>
+
+    @Override
+    public void retrieveCollectionFromDisk( String sourceFileName )
+      throws IllegalArgumentException, StudentCollectionException
+    {
+<span class="fc bfc" id="L527" title="All 2 branches covered.">        if ( sourceFileName == null )</span>
+        {
+<span class="fc" id="L529">            throw new IllegalArgumentException(&quot;(IllegalArgumentException) File name of \&quot;null\&quot; &quot; +</span>
+              &quot;supplied, cannot read&quot;);
+        }
+<span class="fc" id="L532">        String localSourceFileName = sourceFileName.trim();</span>
+<span class="fc bfc" id="L533" title="All 2 branches covered.">        if ( localSourceFileName.length() == 0 )</span>
+        {
+<span class="fc" id="L535">            throw new IllegalArgumentException(&quot;(IllegalArgumentException) Blank name supplied, &quot; +</span>
+              &quot;cannot read&quot;);
+        }
+        /* define a new (temporary) collection */
+        StudentCollection collectionBeingRead;
+        /* create the file object */
+<span class="fc" id="L541">        File theFile = new File(localSourceFileName);</span>
+
+        /* determine if the file exists */
+<span class="fc bfc" id="L544" title="All 2 branches covered.">        if ( theFile.exists() )</span>
+        {
+            try
+            {
+                /* &quot;wrap&quot; the file in an ObjectInputStream */
+<span class="fc" id="L549">                ObjectInputStream theInputFile =</span>
+                  new ObjectInputStream(new FileInputStream(theFile));
+
+                /* read the collection from the file into the TEMPORARY collection */
+<span class="fc" id="L553">                collectionBeingRead = ( StudentCollection ) theInputFile.readObject();</span>
+                /* close the file */
+<span class="fc" id="L555">                theInputFile.close();</span>
+
+                /* copy the contents of the TEMPORARY collection into the current (&quot;this&quot;)
+                 * collection. */
+<span class="fc" id="L559">                this.nextEmptyPosition = collectionBeingRead.nextEmptyPosition;</span>
+<span class="fc" id="L560">                this.elements = collectionBeingRead.elements;</span>
+            }
+<span class="fc" id="L562">            catch ( InvalidClassException causalException )</span>
+            {
+                /* the file does not contain a collection object that is compatible with
+                 * this class - nothing changes with respect to the collection */
+<span class="fc" id="L566">                throw new StudentCollectionException(</span>
+                  &quot;(InvalidClassException) Specified file contains &quot; +
+                  &quot;an object of class StudentCollection but with a different SVUID, or StudentCollection &quot; +
+                  &quot;does not have an accessible no-arg constructor - &quot; +
+<span class="fc" id="L570">                  causalException.getMessage(), causalException);</span>
+            }
+<span class="fc" id="L572">            catch ( ClassCastException causalException )</span>
+            {
+                /* the file does not contain a collection object that is compatible with
+                 * this class - nothing changes with respect to the collection */
+<span class="fc" id="L576">                throw new StudentCollectionException(</span>
+                  &quot;(ClassCastException) Specified file contains &quot; +
+                  &quot;an object of a class other than StudentCollection - &quot; +
+<span class="fc" id="L579">                  causalException.getMessage(), causalException);</span>
+            }
+<span class="nc" id="L581">            catch ( ClassNotFoundException causalException )</span>
+            {
+                /* the file does not contain a collection object that is compatible with
+                 * this class - nothing changes with respect to the collection */
+<span class="nc" id="L585">                throw new StudentCollectionException(&quot;(ClassNotFoundException) Specified file &quot; +</span>
+                  &quot;contains an object of an unknown class type - &quot; +
+<span class="nc" id="L587">                  causalException.getMessage(), causalException);</span>
+            }
+<span class="fc" id="L589">            catch ( IOException causalException )</span>
+            {
+                /* problem reading information from disk - nothing changes with respect
+                 * to the collection */
+<span class="fc" id="L593">                throw new StudentCollectionException(&quot;(IOException) Problem reading from file - &quot; +</span>
+<span class="fc" id="L594">                  causalException.getMessage(), causalException);</span>
+<span class="fc" id="L595">            }</span>
+        }
+        else
+        {
+            /* file not found - nothing changes */
+<span class="fc" id="L600">            throw new IllegalArgumentException(&quot;(FileDoesNotExist) Problem reading from file: &quot; +</span>
+              localSourceFileName + &quot;: file does not exist&quot;);
+        }
+<span class="fc" id="L603">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>
